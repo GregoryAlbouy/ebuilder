@@ -1,0 +1,63 @@
+const path = require('path')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+
+const VERSION = '0.0.1'
+const mode = process.env.NODE_ENV
+const prod = mode === 'production'
+
+const outputPath = {
+    development: './test',
+    production: './dist'
+}
+
+const outputFilename = {
+    development: `elbuilder-${VERSION}.js`,
+    production: `elbuilder-${VERSION}.min.js`
+}
+
+const devtool = {
+    development: 'source-map',
+    production: false
+}
+
+
+module.exports = {
+    mode: mode,
+    entry: path.resolve(__dirname, './src/index.ts'),
+    output: {
+        path: path.resolve(__dirname, outputPath[mode]),
+        filename: outputFilename[mode],
+        library: 'ElBuilder',
+        // libraryTarget: 'var',
+        // globalObject: 'this'
+    },
+    devtool: devtool[mode],
+    plugins: [
+        // new CleanWebpackPlugin()
+    ],
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/i,
+                exclude: /node_modules/,
+                use: 'ts-loader'
+            },
+            {
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        configFile: path.resolve(__dirname, './babel.config.json') 
+                    }
+                }
+            },
+        ]
+    },
+    resolve: {
+        extensions: [ '.tsx', '.ts', '.js' ],
+    },
+    watchOptions: {
+        ignored: /node_modules/
+    }
+}
