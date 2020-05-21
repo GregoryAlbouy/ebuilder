@@ -1,0 +1,26 @@
+{
+  "name": "e-builder",
+  "version": "0.0.1",
+  "description": "Highly configurable and easily manipulable elements in a single declaration, with a functionnal touch.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gregoryalbouy/e-builder.git"
+  },
+  "keywords": [
+    "html",
+    "element",
+    "builder",
+    "library",
+    "javascript"
+  ],
+  "author": "Gregory Albouy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gregoryalbouy/e-builder/issues"
+  },
+  "homepage": "https://github.com/gregoryalbouy/e-builder#readme"
+}
