@@ -1,5 +1,6 @@
-# elBuilder: todo list
+# EBuilder: todo list
 
+* finish README
 * use classes to allow TypeScript decorators?
 * more accurate/consistent function names:
     * setXXX({ add?: T | T[], remove?: T | T[] replace/edit?: [T,K] | [T,K][] })
@@ -11,7 +12,7 @@
     * template element to be immediately processed? 
 
 ```typescript
-function elBuilder(input: 
+function EBuilder(input: 
     string // tag name only
     | HTMLElement
     | { html?: string, selector?: string, tagName?: string }
@@ -19,7 +20,7 @@ function elBuilder(input:
 ```
 OR
 ```typescript
-function ElBuilder(input:
+function EBuilder(input:
     string // 'h2', '@select:h2.title:not[hidden]', '@html:<h2><span>Title</span></h2>
     | HTMLElement
 )
