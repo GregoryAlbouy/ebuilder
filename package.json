@@ -1,5 +1,5 @@
 {
-  "name": "el-builder",
+  "name": "e-builder",
   "version": "0.0.1",
   "description": "",
   "main": "",
@@ -7,9 +7,9 @@
     "start": "NODE_ENV=development webpack --watch",
     "dev": "NODE_ENV=development webpack",
     "build": "NODE_ENV=production webpack",
-    "lib": "tsc && babel lib -d lib"
+    "package": "tsc && babel package -d package"
   },
-  "author": "",
+  "author": "Gregory Albouy",
   "license": "ISC",
   "devDependencies": {
     "@babel/cli": "^7.8.4",

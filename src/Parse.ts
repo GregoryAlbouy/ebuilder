@@ -15,9 +15,9 @@ export function elementStringSource (source: string) {
     }
 }
 
-export function eventInput(this: ElementBuilderObject, eventInput: string) {
+export function eventInput(this: EBObject, eventInput: string) {
     const elementFrom = (getRefResult: any) => {
-        return 'isElementBuilder' in getRefResult ? getRefResult.element : getRefResult
+        return 'isEBuilder' in getRefResult ? getRefResult.element : getRefResult
     }
 
     const [type, targetInput] = eventInput.split('#')
@@ -26,7 +26,7 @@ export function eventInput(this: ElementBuilderObject, eventInput: string) {
     return [type, target]
 }
 
-export function getComputedValue(this: ElementBuilderObject, value: any) {
+export function getComputedValue(this: EBObject, value: any) {
     return Check.isFunction(value) ? value.call(this) : value
 }
 

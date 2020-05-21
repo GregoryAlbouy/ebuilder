@@ -1,13 +1,13 @@
-import ElementBuilderAnimation from './ElementBuilderAnimation'
-import ElementBuilderError from './ElementBuilderError'
+import EBuilderAnimation from './EBuilderAnimation'
+import EBuilderError from './EBuilderError'
 import * as Check from './Check'
 import * as Parse from './Parse'
 import * as Setter from './Setter'
 
-const ElementBuilder = function(this: any, source: Element | string)
+const EBuilder = function(this: any, source: Element | string)
 {
     if (!Check.isValidSource(source)) {
-        new ElementBuilderError('Invalid source input', source)
+        new EBuilderError('Invalid source input', source)
         return
     }
 
@@ -18,11 +18,11 @@ const ElementBuilder = function(this: any, source: Element | string)
         el: element,
         element: element,
         htmlContent: function() { return this.element.innerHTML },
-        isElementBuilder: true,
+        isEBuilder: true,
         referenceMap: referenceMap,
 
         getRef: function(query: string): any {
-            return this.referenceMap.get(query) || (new ElementBuilderError('nul!', query), false)
+            return this.referenceMap.get(query) || (new EBuilderError('nul!', query), false)
         },
 
         given: function(...references: ReferencePair[]) {
@@ -32,7 +32,7 @@ const ElementBuilder = function(this: any, source: Element | string)
                     this.referenceMap.set(id, target)
                 } else if (Check.isNamedFunction(ref)) {
                     this.referenceMap.set((ref as Function).name, ref)
-                } else new ElementBuilderError('Invalid given() argument input', ref)
+                } else new EBuilderError('Invalid given() argument input', ref)
             }
 
             references.forEach(register)
@@ -43,8 +43,8 @@ const ElementBuilder = function(this: any, source: Element | string)
             if (!Check.isValidTarget(targetInput)) return
 
             const getTarget = (target: EBTarget) => {
-                return Check.isElementBuilder(target)
-                    ? (target as ElementBuilderObject).element as Element
+                return Check.isEBuilder(target)
+                    ? (target as EBObject).element as Element
                     : target as Element
             } 
 
@@ -68,23 +68,7 @@ const ElementBuilder = function(this: any, source: Element | string)
             const p = Math.floor(Number(at))
             Number.isNaN(p) ? target.appendChild(element) : insertAt(element, target, p)
 
-            // if (!Check.isNumber(times) || times < 1) {
-            //     new ElementBuilderError('Invalid times value (whole number >= 1 expected)', times)
-            // }
-            // else if (times === 1) {
-            //     target.appendChild(element)
-            // }
-
-            // /**
-            //  * FIX: elements appended but settings not applied
-            //  */
-            // else {
-            //     console.log(times)
-            //     const clone = () => element.cloneNode(true)
-            //     ;[...Array(Math.floor(times))].forEach(() => target.appendChild(clone()))
-            // }
-
-            this.element.dispatchEvent(new CustomEvent('ElementBuilderInsert'))
+            this.element.dispatchEvent(new CustomEvent('ebuilderinsert'))
 
             return this
         },
@@ -92,7 +76,7 @@ const ElementBuilder = function(this: any, source: Element | string)
         after: function(node: Element) {
             node.insertAdjacentElement('afterend', element)
 
-            this.element.dispatchEvent(new CustomEvent('ElementBuilderInsert'))
+            this.element.dispatchEvent(new CustomEvent('ebuilderinsert'))
 
             return this
         },
@@ -100,7 +84,7 @@ const ElementBuilder = function(this: any, source: Element | string)
         before: function(node: Element) {
             node.insertAdjacentElement('beforebegin', element)
 
-            this.element.dispatchEvent(new CustomEvent('ElementBuilderInsert'))
+            this.element.dispatchEvent(new CustomEvent('ebuilderinsert'))
 
             return this
         },
@@ -108,7 +92,7 @@ const ElementBuilder = function(this: any, source: Element | string)
         replace: function(node: Node) {
             node.parentNode?.replaceChild(element, node)
 
-            this.element.dispatchEvent(new CustomEvent('ElementBuilderInsert'))
+            this.element.dispatchEvent(new CustomEvent('ebuilderinsert'))
         
             return this
         },
@@ -124,7 +108,7 @@ const ElementBuilder = function(this: any, source: Element | string)
                     ? animate.animationDuration
                     : undefined
 
-                await new ElementBuilderAnimation(ms).swap2(element as HTMLElement, swapped)
+                await new EBuilderAnimation(ms).swap2(element as HTMLElement, swapped)
             }
 
             const dummy = document.createElement('div')
@@ -142,7 +126,7 @@ const ElementBuilder = function(this: any, source: Element | string)
         dispatch: function(nameInput: string, emitterInput?: any) {
             const emitter = !emitterInput
                 ? this.element 
-                : 'isElementBuilder' in emitterInput
+                : 'isEBuilder' in emitterInput
                     ? emitterInput.element
                     : emitterInput
 
@@ -168,7 +152,7 @@ const ElementBuilder = function(this: any, source: Element | string)
 
             Setter.process.call(this, options, setOption)
 
-            this.element.dispatchEvent(new CustomEvent('elbuilderset'))
+            this.element.dispatchEvent(new CustomEvent('ebuilderset'))
 
             return this
         },
@@ -204,15 +188,6 @@ const ElementBuilder = function(this: any, source: Element | string)
             return this
         },
 
-        // todo: (classes: string | array | object)
-        // object: { add, remove, toggle }
-        // setClasses: (classes: string[] | string, ...args: string[]) => {
-        //     typeOf(classes) === 'array' ? element.classList.add(...classes)
-        //                                 : element.classList.add(classes)
-
-        //     return this
-        // },
-
         setClasses: function(...classes: (string | string[])[]) {
             element.classList.add(...([] as string[]).concat(...classes))
 
@@ -237,13 +212,10 @@ const ElementBuilder = function(this: any, source: Element | string)
             return element.outerHTML
         },
 
-        /**
-         * TODO: add filter parameter
-         */
         count: function() {
             return this.element.childNodes.length
         }
     }
 }
 
-export default ElementBuilder
+export default EBuilder

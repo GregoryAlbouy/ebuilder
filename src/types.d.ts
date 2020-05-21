@@ -7,8 +7,8 @@ type ReferencePair = [Object, string]
 
 type Thenable = { then: Function }
 
-type EBChild = string | number | Node | ElementBuilderObject
-type EBTarget = Node | ElementBuilderObject
+type EBChild = string | number | Node | EBObject
+type EBTarget = Node | EBObject
 
 type ReferenceMap = Map<string, Object>
 
@@ -32,8 +32,8 @@ interface IntoOptions {
     at?: number
 }
 
-interface ElementBuilderObject {
-    isElementBuilder: boolean
+interface EBObject {
+    isEBuilder: boolean
     html?: string
     el: Element
     element: Element

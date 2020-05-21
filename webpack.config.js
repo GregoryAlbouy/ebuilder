@@ -7,8 +7,8 @@ const outputPath = {
     production: './dist'
 }
 const outputFilename = {
-    development: `elbuilder-${VERSION}.js`,
-    production: `elbuilder-${VERSION}.min.js`
+    development: `ebuilder-${VERSION}.js`,
+    production: `ebuilder-${VERSION}.min.js`
 }
 const devtool = {
     development: 'source-map',
@@ -22,7 +22,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, outputPath[mode]),
         filename: outputFilename[mode],
-        library: 'ElBuilder',
+        library: 'EBuilder',
         // libraryTarget: 'var',
         // globalObject: 'this'
     },

@@ -1,4 +1,4 @@
-import ElementBuilderError from './ElementBuilderError'
+import EBuilderError from './EBuilderError'
 import * as Parse from './Parse'
 
 export const RuleMap: FunctionObject = {
@@ -11,7 +11,7 @@ export const RuleMap: FunctionObject = {
 }
 
 function handleEvent(
-    this: ElementBuilderObject,
+    this: EBObject,
     eventInput: string,
     callback: Function,
     isOnce?: boolean
@@ -29,7 +29,7 @@ function handleEvent(
 }
 
 export function On(
-    this: ElementBuilderObject,
+    this: EBObject,
     eventInput: string,
     callback: Function
 ): void {
@@ -37,7 +37,7 @@ export function On(
 }
 
 export function Once(
-    this: ElementBuilderObject,
+    this: EBObject,
     eventInput: string,
     callback: Function
 ): void {
@@ -45,7 +45,7 @@ export function Once(
 }
 
 export function Interval(
-    this: ElementBuilderObject,
+    this: EBObject,
     rate: string,
     callback: Function
 ): void {
@@ -57,19 +57,19 @@ export function Timeout(delay: string, callback: Function): void {
 }
 
 export function If(
-    this: ElementBuilderObject,
+    this: EBObject,
     conditionId: string,
     callback: Function
 ): void {
     if (!this.referenceMap.has(conditionId)) {
-        new ElementBuilderError(`Condition id not found. Make sure to provide the corresponding pair [Function: boolean, conditionId: string] as an argument of the .given() method before using an @if rule `, conditionId)
+        new EBuilderError(`Condition id not found. Make sure to provide the corresponding pair [Function: boolean, conditionId: string] as an argument of the .given() method before using an @if rule `, conditionId)
     } else if ((this.referenceMap.get(conditionId) as Function)()) {
         callback()
     }
 }
 
 export function For(
-    this: ElementBuilderObject,
+    this: EBObject,
     conditionId: string,
     callback: Function
 ): void {

@@ -1,6 +1,8 @@
 # ElBuilder : an HTML element builder
 
-Highly configurable and manipulable elements in a single declaration, with a touch of functionnal programming.
+Highly configurable and manipulable elements in a single declaration, with a functionnal touch.
+
+**README in progress!**
 
 ## Overview / Main features
 
@@ -13,11 +15,19 @@ Highly configurable and manipulable elements in a single declaration, with a tou
 
 ## Properties
 
-* `el`, `element`: the generated HTML element. The only property of this list useful for the user.
-* `isElementBuilder`: a boolean used internally for specific behaviours.
-* `referenceMap`: a Map used internally to store references inputs through the `given()` method.
+* `el`, `element`: the generated HTML element.
 
 ## Methods
+
+### Setter methods
+
+#### setAttributes()
+#### setProperties()
+#### setListeners()
+#### setChildren()
+#### setClasses()
+#### setStyles()
+#### set()
 
 ### Miscellaneous
 
@@ -29,16 +39,6 @@ const elButton = ElBuilder('button').set({ ... })
 
 someElement.innerHTML += elButton
 ```
-
-### Setter methods
-
-#### setAttributes()
-#### setProperties()
-#### setListeners()
-#### setChildren()
-#### setClasses()
-#### setStyles()
-#### set()
 
 Signature: 
 ```typescript
@@ -185,9 +185,3 @@ See `given()` for more info about references.
 `'key@for:arrayReference: 'value'`
 The corresponding value is assigned a number of times equal to the length of `:arrayReference`
 See `given()` for more info about references.
-
-## Notes
-
-* .given()
-* .dispatch()
-* .toString()

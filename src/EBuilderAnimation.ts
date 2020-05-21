@@ -1,6 +1,6 @@
-import ElementBuilderError from './ElementBuilderError'
+import EBuilderError from './EBuilderError'
 
-export default class ElementBuilderAnimation
+export default class EBuilderAnimation
 {
     duration: number = 200
     then: Thenable = {
@@ -10,7 +10,7 @@ export default class ElementBuilderAnimation
 
     constructor(duration?: number)
     {
-        if (duration && duration < 0) throw new ElementBuilderError('Invalid animation duration', name)
+        if (duration && duration < 0) throw new EBuilderError('Invalid animation duration', name)
         else this.duration = duration || this.duration
     }
 

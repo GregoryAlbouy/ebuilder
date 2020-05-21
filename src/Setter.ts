@@ -1,4 +1,4 @@
-import ElementBuilderError from './ElementBuilderError'
+import EBuilderError from './EBuilderError'
 import * as Check from './Check'
 import * as Parse from './Parse'
 import * as Rule from './Rule'
@@ -25,7 +25,7 @@ export function element(source: string | Element): Element {
     if (hasRule(source)) {
         const { rule, value } = Parse.elementStringSource(source)
     
-        if (!value) new ElementBuilderError('Invalid ElBuilder source input', source)
+        if (!value) new EBuilderError('Invalid ElBuilder source input', source)
     
         const safeRule = rule ?? 'element'
     
@@ -35,7 +35,7 @@ export function element(source: string | Element): Element {
     return ruleMap[inputType(source)](source)
 }
 
-export function Properties(this: ElementBuilderObject, properties: AnyObject = {}): void {
+export function Properties(this: EBObject, properties: AnyObject = {}): void {
     const setProperty = (name: string, value: any) => {
         (this.element as AnyObject)[name] = value
     }
@@ -43,7 +43,7 @@ export function Properties(this: ElementBuilderObject, properties: AnyObject = {
     process.call(this, properties, setProperty)
 }
 
-export function Attributes(this: ElementBuilderObject, attributes: StringObject = {}): void {
+export function Attributes(this: EBObject, attributes: StringObject = {}): void {
     const addAttribute = (name: string, value: any) => {
         if (this.element instanceof Element) {
             this.element.setAttribute(name, value)
@@ -53,7 +53,7 @@ export function Attributes(this: ElementBuilderObject, attributes: StringObject 
     process.call(this, attributes, addAttribute)
 }
 
-export function Styles(this: ElementBuilderObject, styles: StringObject | Function = {}): void {
+export function Styles(this: EBObject, styles: StringObject | Function = {}): void {
     const setStyle = (name: string, value: any) => {
         if (this.element instanceof HTMLElement) {
             (this.element.style as AnyObject)[name] = value
@@ -63,20 +63,20 @@ export function Styles(this: ElementBuilderObject, styles: StringObject | Functi
     process.call(this, styles, setStyle)
 }
 
-export function Listeners(this: ElementBuilderObject, listeners: EventTuple | EventTuple[]): void {
+export function Listeners(this: EBObject, listeners: EventTuple | EventTuple[]): void {
     const addListener = ([event, listener, options]: EventTuple): void => {
         this.element.addEventListener(event, listener, options)
     }
 
     if (Check.isEventTuple(listeners)) addListener(listeners as EventTuple)
     else if (Check.isEventTupleArray(listeners)) (listeners as EventTuple[]).forEach(addListener)
-    else new ElementBuilderError('Invalid input for listeners input ([string, Function] or [string, Function][] expected)', listeners)
+    else new EBuilderError('Invalid input for listeners input ([string, Function] or [string, Function][] expected)', listeners)
 }
 
-export function Children(this: ElementBuilderObject, children: EBChild | EBChild[] | Function): void {
+export function Children(this: EBObject, children: EBChild | EBChild[] | Function): void {
     const addChild = (child: EBChild): void => {
         if (!Check.isValidChild(child)) {
-            new ElementBuilderError('Invalid child (Node, string, number or ElementBuilder instance expected)', child)
+            new EBuilderError('Invalid child (Node, string, number or EBuilder instance expected)', child)
             return
         }
         if (child instanceof Node) {
@@ -85,22 +85,22 @@ export function Children(this: ElementBuilderObject, children: EBChild | EBChild
         else if (Check.isTypeOf(child, 'string', 'number')) {
             this.element.innerHTML += `${child}`
         } 
-        else if ((child as ElementBuilderObject).isElementBuilder) {
-            this.element.appendChild((child as ElementBuilderObject).element)
+        else if ((child as EBObject).isEBuilder) {
+            this.element.appendChild((child as EBObject).element)
         }
-        else new ElementBuilderError(`Invalid input in children array`, child)
+        else new EBuilderError(`Invalid input in children array`, child)
     }
     const childrenValue = Parse.getComputedValue.call(this, children)
     Check.isValidChild(childrenValue)
         ? addChild(childrenValue as EBChild)
         : Check.isTypeOf(childrenValue, 'array')
             ? (childrenValue as []).forEach(addChild)
-            : new ElementBuilderError(`Invalid input for children value`, childrenValue)
+            : new EBuilderError(`Invalid input for children value`, childrenValue)
 }
 
 
 export function process(
-    this: ElementBuilderObject,
+    this: EBObject,
     source: AnyObject,
     callback: SetterCallback,
     keyRestriction?: Object

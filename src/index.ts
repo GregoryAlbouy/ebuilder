@@ -1,1 +1,1 @@
-module.exports = require('./ElementBuilder.ts').default
+module.exports = require('./EBuilder').default

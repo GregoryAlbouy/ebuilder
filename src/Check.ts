@@ -58,11 +58,11 @@ export const isElement = (subject: any): boolean => {
     return subject instanceof Element
 }
 
-export const isElementBuilder = (subject: any): boolean => {
+export const isEBuilder = (subject: any): boolean => {
     return (
         subject instanceof Object
-        && 'isElementBuilder' in subject && 'el' in subject
-        && subject.isElementBuilder && subject.el
+        && 'isEBuilder' in subject && 'el' in subject
+        && subject.isEBuilder && subject.el
     )
 }
 
@@ -70,7 +70,7 @@ export const isValidChild = (child: any): boolean => {
     return (
         isTypeOf(child, 'string', 'number')
         || child instanceof Node
-        || (child as ElementBuilderObject).isElementBuilder
+        || (child as EBObject).isEBuilder
     )
 }
 
@@ -89,7 +89,7 @@ export const isValidSwap = (element: Element, swapped: Element): boolean => {
 }
 
 export const isValidTarget = (target: any) => {
-    return isElementBuilder(target) || target instanceof Element
+    return isEBuilder(target) || target instanceof Element
 }
 
 export const hasName = (input: Function): boolean => {

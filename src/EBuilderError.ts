@@ -1,10 +1,10 @@
-export default class ElementBuilderError extends Error
+export default class EBuilderError extends Error
 {
     suspect: any
     
     constructor(message: string, suspect: any) {
         super(message)
-        this.name = 'ElementBuilderError'
+        this.name = 'EBuilderError'
         this.suspect = suspect
 
         console.warn(
