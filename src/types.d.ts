@@ -21,10 +21,10 @@ type EventTuple = [
 type SetterCallback = (key: string, value: any) => void
 
 interface SetOptions {
-    properties?: AnyObject
-    attributes?: StringObject
-    listeners?: EventTuple | EventTuple[]
-    children?: Node | Node[] | string
+    properties?: AnyObject | Function
+    attributes?: StringObject | Function
+    listeners?: EventTuple | EventTuple[] | Function
+    children?: EBChild | EBChild[] | Function
 }
 
 interface IntoOptions {
