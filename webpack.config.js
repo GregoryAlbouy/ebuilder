@@ -1,20 +1,15 @@
 const path = require('path')
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 
 const VERSION = '0.0.1'
 const mode = process.env.NODE_ENV
-const prod = mode === 'production'
-
 const outputPath = {
     development: './test',
     production: './dist'
 }
-
 const outputFilename = {
     development: `elbuilder-${VERSION}.js`,
     production: `elbuilder-${VERSION}.min.js`
 }
-
 const devtool = {
     development: 'source-map',
     production: false
@@ -32,9 +27,7 @@ module.exports = {
         // globalObject: 'this'
     },
     devtool: devtool[mode],
-    plugins: [
-        // new CleanWebpackPlugin()
-    ],
+    plugins: [],
     module: {
         rules: [
             {

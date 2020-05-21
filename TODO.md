@@ -10,7 +10,6 @@
     * css selector
     * template element to be immediately processed? 
 
-
 ```typescript
 function elBuilder(input: 
     string // tag name only
@@ -25,7 +24,6 @@ function ElBuilder(input:
     | HTMLElement
 )
 ```
-
 
 * check Element / HTMLElement consistency
 * finish error handling, use Enum or json for error description -> if (error) new ElBuilderError(E.SETSTYLES_INVALID_INPUT, input)

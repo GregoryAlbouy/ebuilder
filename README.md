@@ -39,6 +39,7 @@ someElement.innerHTML += elButton
 #### setClasses()
 #### setStyles()
 #### set()
+
 Signature: 
 ```typescript
 ElBuilder(myElement).set({}: {

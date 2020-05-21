@@ -1,19 +1,55 @@
 import ElementBuilderError from './ElementBuilderError'
+import * as Parse from './Parse'
 
-export function On(eventName: string, callback: Function): void {
-    window.addEventListener(eventName, () => callback())
+export const RuleMap: FunctionObject = {
+    on: On,
+    once: Once,
+    interval: Interval,
+    timeout: Timeout,
+    if: If,
+    for: For
 }
 
-export function Once(eventName: string, callback: Function): void {
-    const listener = () => {
-        window.removeEventListener(eventName, listener)
+function handleEvent(
+    this: ElementBuilderObject,
+    eventInput: string,
+    callback: Function,
+    isOnce?: boolean
+) {
+    const [type, emitter] = Parse.eventInput.call(this, eventInput)
+
+    const once = () => {
+        emitter.removeEventListener(type, once)
         callback()
     }
-    window.addEventListener(eventName, listener)
+
+    const handler = isOnce ? once : callback
+
+    if ('addEventListener' in emitter) emitter.addEventListener(type, handler)
 }
 
-export function Interval(rate: string, callback: Function): void {
-    setInterval(callback, parseInt(rate))
+export function On(
+    this: ElementBuilderObject,
+    eventInput: string,
+    callback: Function
+): void {
+    handleEvent.call(this, eventInput, callback)
+}
+
+export function Once(
+    this: ElementBuilderObject,
+    eventInput: string,
+    callback: Function
+): void {
+    handleEvent.call(this, eventInput, callback, true)
+}
+
+export function Interval(
+    this: ElementBuilderObject,
+    rate: string,
+    callback: Function
+): void {
+    this.interval = setInterval(callback, parseInt(rate))
 }
 
 export function Timeout(delay: string, callback: Function): void {
@@ -35,7 +71,17 @@ export function If(
 export function For(
     this: ElementBuilderObject,
     conditionId: string,
-    callback: Function)
-: void {
+    callback: Function
+): void {
+    const array = this.getRef(conditionId)
+    console.log(array, conditionId)
 
+
+    array.forEach((v: any, i: number, a: []) => {
+        
+        // TODO: find a way to get the (function) value of an entry with @for rule
+        // const realValue = entryValue.bind.call(this, v, i a)
+        console.log(callback)
+        callback()
+    } )
 }

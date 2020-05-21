@@ -1,19 +1,8 @@
-/**
- * Helper function that allows to fully create and set an element
- * (attributes, class, listeners...) and append it anywhere with a single
- * declaration, thanks to its chaining ability.
- * 
- * TODO: use class instead and use parameter decorators for checks
- * TODO: add .into(xxx, { at: 3 })
- * TODO: add execution order/priority manager in .set(), e.g:
- * ElementBuilder('a').set({})
- */
-
 import ElementBuilderAnimation from './ElementBuilderAnimation'
 import ElementBuilderError from './ElementBuilderError'
-import * as RuleManager from './RuleManager'
-import * as Check from './utils/Check'
-import * as Setter from './utils/Setter'
+import * as Check from './Check'
+import * as Parse from './Parse'
+import * as Setter from './Setter'
 
 const ElementBuilder = function(this: any, source: Element | string)
 {
@@ -23,39 +12,79 @@ const ElementBuilder = function(this: any, source: Element | string)
     }
 
     const element: Element = Setter.sourceElement(source)
-    const referenceMap: ReferenceMap = new Map()
+    const referenceMap: ReferenceMap = new Map([['window', window]])
 
     return {
+        el: element,
         element: element,
-        html: element ? element.outerHTML : undefined,
+        htmlContent: function() { return this.element.innerHTML },
         isElementBuilder: true,
         referenceMap: referenceMap,
 
+        getRef: function(query: string): any {
+            return this.referenceMap.get(query) || (new ElementBuilderError('nul!', query), false)
+        },
+
         given: function(...references: ReferencePair[]) {
-            references.forEach(([target, id]) => {
-                this.referenceMap.set(id, target)
-            })
+            const register = (ref: ReferencePair | Function) => {
+                if (Check.isArray(ref)) {
+                    const [target, id] = ref as ReferencePair
+                    this.referenceMap.set(id, target)
+                } else if (Check.isNamedFunction(ref)) {
+                    this.referenceMap.set((ref as Function).name, ref)
+                } else new ElementBuilderError('Invalid given() argument input', ref)
+            }
+
+            references.forEach(register)
             return this
         },
 
-        into: function(node: Node, { times = 1 }: { times?: number } = {}) {
-            if (!Check.isTypeOf(times, 'number') || times < 1) {
-                new ElementBuilderError('Invalid times value (whole number >= 1 expected)', times)
-            }
-            else if (times === 1) {
-                node.appendChild(element)
+        into: function( targetInput: EBTarget, { at = -1, times = 1 }: IntoOptions = {}) {
+            if (!Check.isValidTarget(targetInput)) return
+
+            const getTarget = (target: EBTarget) => {
+                return Check.isElementBuilder(target)
+                    ? (target as ElementBuilderObject).element as Element
+                    : target as Element
+            } 
+
+            const insertAt = (element: Element, target: Element, n: number) => {
+                if (!Check.isNumber(n)) return
+
+                const getPos = (n: number, length: number) => {
+                    return n < 0
+                        ? Math.max(length - 1 + n, 0)
+                        : Math.min(length - 1, n)
+                }
+
+                const childList = target.children
+                const p = getPos(n, childList.length)
+
+                if (childList.length === 0 || childList.length - 1 === p) target.appendChild(element)
+                else childList[p].insertAdjacentElement('beforebegin', element)
             }
 
-            /**
-             * FIX: elements appended but settings not applied
-             */
-            else {
-                console.log(times)
-                const clone = () => element.cloneNode(true)
-                ;[...Array(Math.floor(times))].forEach(() => node.appendChild(clone()))
-            }
+            const target = getTarget(targetInput)
+            const p = Math.floor(Number(at))
+            Number.isNaN(p) ? target.appendChild(element) : insertAt(element, target, p)
 
-            window.dispatchEvent(new CustomEvent('ElementBuilderInsert'))
+            // if (!Check.isNumber(times) || times < 1) {
+            //     new ElementBuilderError('Invalid times value (whole number >= 1 expected)', times)
+            // }
+            // else if (times === 1) {
+            //     target.appendChild(element)
+            // }
+
+            // /**
+            //  * FIX: elements appended but settings not applied
+            //  */
+            // else {
+            //     console.log(times)
+            //     const clone = () => element.cloneNode(true)
+            //     ;[...Array(Math.floor(times))].forEach(() => target.appendChild(clone()))
+            // }
+
+            this.element.dispatchEvent(new CustomEvent('ElementBuilderInsert'))
 
             return this
         },
@@ -63,7 +92,7 @@ const ElementBuilder = function(this: any, source: Element | string)
         after: function(node: Element) {
             node.insertAdjacentElement('afterend', element)
 
-            window.dispatchEvent(new CustomEvent('ElementBuilderInsert'))
+            this.element.dispatchEvent(new CustomEvent('ElementBuilderInsert'))
 
             return this
         },
@@ -71,7 +100,7 @@ const ElementBuilder = function(this: any, source: Element | string)
         before: function(node: Element) {
             node.insertAdjacentElement('beforebegin', element)
 
-            window.dispatchEvent(new CustomEvent('ElementBuilderInsert'))
+            this.element.dispatchEvent(new CustomEvent('ElementBuilderInsert'))
 
             return this
         },
@@ -79,36 +108,67 @@ const ElementBuilder = function(this: any, source: Element | string)
         replace: function(node: Node) {
             node.parentNode?.replaceChild(element, node)
 
-            window.dispatchEvent(new CustomEvent('ElementBuilderInsert'))
+            this.element.dispatchEvent(new CustomEvent('ElementBuilderInsert'))
         
             return this
         },
 
-        dispatch: function(eventName: string) {
-            window.dispatchEvent(new CustomEvent(eventName))
+        swap: async function(
+            swapped: HTMLElement,
+            animate?: (boolean | { animationDuration?: number, animationType?: string })
+        ) {            
+            if (!Check.isValidSwap(element, swapped)) return
+
+            if (animate) {
+                const ms = typeof animate === 'object' && animate.animationDuration
+                    ? animate.animationDuration
+                    : undefined
+
+                await new ElementBuilderAnimation(ms).swap2(element as HTMLElement, swapped)
+            }
+
+            const dummy = document.createElement('div')
+            element.parentNode!.replaceChild(dummy, element)
+            swapped.parentNode!.replaceChild(element, swapped)
+            dummy.parentNode!.replaceChild(swapped, dummy)
 
             return this
         },
 
-        set: function(options: SetOptions = {}) {
-            const processed = RuleManager.processSourceObject(options)
+        out: function() {
+            element.parentNode?.removeChild(element)
+        },
 
+        dispatch: function(nameInput: string, emitterInput?: any) {
+            const emitter = !emitterInput
+                ? this.element 
+                : 'isElementBuilder' in emitterInput
+                    ? emitterInput.element
+                    : emitterInput
+
+            
+            emitter.dispatchEvent(new CustomEvent(nameInput))
+            console.log(emitter, nameInput)
+            return this
+        },
+
+        set: function(options: SetOptions = {}) {
             const Options: FunctionObject = {
-                properties: (value: any) => Setter.Properties.call(this, value),
-                attributes: (value: any) => Setter.Attributes.call(this, value),
-                listeners: (value: any) => Setter.Listeners.call(this, value),
-                children: (value: any) => Setter.Children.call(this, value)
+                properties: Setter.Properties,
+                attributes: Setter.Attributes,
+                listeners: Setter.Listeners,
+                children: Setter.Children,
             }
 
-            const setterCallback = (name: any, value: any) => {
+            const setOption = (name: any, value: any) => {
                 if (!(name in Options)) return
 
-                Options[name](value)
+                Options[name].call(this, value)
             }
 
-            RuleManager.assignWithSetter.call(this, options, setterCallback)
+            Setter.process.call(this, options, setOption)
 
-            window.dispatchEvent(new CustomEvent('ElementBuilderSet'))
+            this.element.dispatchEvent(new CustomEvent('elbuilderset'))
 
             return this
         },
@@ -131,14 +191,15 @@ const ElementBuilder = function(this: any, source: Element | string)
             return this
         },
 
-        setChildren: function(children: ValidChild | ValidChild[]) {
+        setChildren: function(children: EBChild | EBChild[] | Function) {
             Setter.Children.call(this, children)
 
             return this
         },
 
         setStyles: function(styles: StringObject | Function) {
-            Setter.Styles.call(this, styles)
+            const value = Parse.getComputedValue.call(this, styles)
+            Setter.Styles.call(this, value)
 
             return this
         },
@@ -158,35 +219,6 @@ const ElementBuilder = function(this: any, source: Element | string)
             return this
         },
 
-        swap: async function(
-            swapped: HTMLElement,
-            animate?: (boolean | { animationDuration?: number, animationType?: string })
-        ) {
-            const elementsAreValid = (): boolean => {
-                return (
-                    element instanceof HTMLElement && swapped instanceof HTMLElement
-                    && (!!element.parentNode && !!swapped.parentNode)
-                    && element !== swapped
-                )
-            }
-            
-            if (!elementsAreValid()) return
-
-            if (animate) {
-                const ms = typeof animate === 'object' && animate.animationDuration
-                    ? animate.animationDuration
-                    : undefined
-
-                await new ElementBuilderAnimation(ms).swap2(element as HTMLElement, swapped)
-            }
-
-            const dummy = document.createElement('div')
-            element.parentNode!.replaceChild(dummy, element)
-            swapped.parentNode!.replaceChild(element, swapped)
-            dummy.parentNode!.replaceChild(swapped, dummy)
-            return this
-        },
-
         setStyle: function(styles: StringObject = {}) {
             if (element instanceof HTMLElement) {
                 Object.assign((element as HTMLElement).style, styles)
@@ -195,8 +227,21 @@ const ElementBuilder = function(this: any, source: Element | string)
             return this
         },
 
+        textContent: function(input: string) {
+            element.textContent = input
+
+            return this
+        },
+
         toString: function() {
             return element.outerHTML
+        },
+
+        /**
+         * TODO: add filter parameter
+         */
+        count: function() {
+            return this.element.childNodes.length
         }
     }
 }

@@ -1,3 +1,4 @@
+
 const Test = {
     constructor: (errors) => {
         console.log('---- MAIN PARAMETER ----')
@@ -66,9 +67,14 @@ const Test = {
 
     insertions: (errors) => {
         console.log('---- INTO(), BEFORE(), AFTER(), SWAP() ----')
-
+        console.log([...Array(5)].map(() => '<li>child</li>'))
         if (!errors) {
             console.log('-- VALID --')
+
+            const elList = ElBuilder('ol').into(document.body)
+                .setChildren(() => [...Array(5)].map(() => '<li>child</li>'))
+
+            const stranger = ElBuilder('li').textContent('stranger!').into(elList, { at: -5 })
 
         } else {
             console.log('-- ERRORS --')
@@ -77,41 +83,61 @@ const Test = {
 
     rules: (errors) => {
         console.log('---- @-RULES ----')
+        console.log(document.body)
 
-        const isLucky = () => Math.floor(2 * Math.random()) % 2 === 0
-        const isTrue = () => true
-        const isFalse = () => false
+        const isLucky = () => Date.now() % 2
+
+        const button = ElBuilder('button').into(document.body).setChildren('my button')
+        const array = ['wesh', true, 42]
+
 
         const div = ElBuilder('div')
             .into(document.body)
-            .given([isLucky, 'isLucky'], [isTrue, 'isTrue'], [isFalse, 'isFalse'])
+            .given(isLucky, [array, 'myArray'], [button, 'myButton'])
+
+            console.log(div.getRef('isLucky'))
 
         if (!errors) {
             console.log('-- VALID --')
 
             div.set({
-                attributes: { style: 'width:100px; height: 100px; background: black' }
+                attributes: { style: 'width:100px;height:100px;background:black;color:#FFF' },
+                // 'children@for:myArray': function(v, i, a) {
+                //     return `<p>${i}: ${v}</p>`
+                // }
+                'children@if:isLucky': 'ROUGE'
             })
-            .setStyles({ 'background@if:isLucky': 'red' })
+            .setStyles({
+                'background@if:isLucky': 'red',
+                'transform@on:click#myButton': () => `scale(${1 + 0.2 * Math.random()})`
+            })
+            // .setStyles({ background: () => isLucky() ? 'red' : 'black' })
+
 
         } else {
             console.log('-- ERRORS --')
         }
-
     }
 }
 
 // Test.constructor(false)
 // Test.constructor(true)
 
-Test.setters(false)
+// Test.setters(false)
 // Test.setters(true)
 
-// Test.insertions(false)
+Test.insertions(false)
 // Test.insertions(true)
 
-Test.rules(false)
+// Test.rules(false)
 // Test.rules(true)
+
+
+// const div = ElBuilder('div')
+//     .setStyles(() => ({ width: '100px', height: '100px', background: '#39C' }))
+//     .into(document.body, { times: 3 })
+
+// console.log(div)
 
 
 
@@ -141,3 +167,40 @@ Test.rules(false)
 //         listeners: function() { return ['click', () => this.swap(document.querySelector('.list-2 li'), true) ]}
 //     }))
 // }).into(document.body).before(ol)
+
+
+// const elList = ElBuilder('ol').into(document.body)
+
+// elList.set({
+//     properties: {
+//         'innerHTML@once:hi-there': () => elList.htmlContent() + '<li>2</li>'
+//     }
+// }).setChildren('<li>1</li>').dispatch('hi-there')
+
+// const myButton = ElBuilder('button').into(document.body)
+
+// ElBuilder('p')
+//     .given([ myButton, 'buttonRef' ])
+//     .setProperties({ 'textContent@once:click#buttonRef': 'Hello!' })
+//     .into(document.body)
+
+// const colors = ElBuilder('div')
+// colors.setStyles({
+//     width: '200px',
+//     height: '200px',
+//     transition: 'background 1s',
+//     'background@interval:1000': () => `hsl(${360 * Math.random()}, 50%, 50%)`
+// })
+// document.body.innerHTML += colors
+
+// const elList = ElBuilder('ul').into(document.body)
+// elList.setProperties({
+//     'innerHTML@on:click#window': elList.htmlContent() + `<p>I have ${elList.count()} children.</p>`
+// })
+
+// const elList = ElBuilder('ul').into(document.body)
+// elList.setProperties({
+//     'innerHTML@interval:1000': () => elList.htmlContent() + `<li>I have ${elList.count() + 1} children.</li>`
+// })
+
+// ElBuilder('button').setProperties({ onclick: () => () => clearInterval(elList.interval) }).into(document.body)

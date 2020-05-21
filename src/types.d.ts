@@ -7,7 +7,8 @@ type ReferencePair = [Object, string]
 
 type Thenable = { then: Function }
 
-type ValidChild = string | number | Node | ElementBuilderObject
+type EBChild = string | number | Node | ElementBuilderObject
+type EBTarget = Node | ElementBuilderObject
 
 type ReferenceMap = Map<string, Object>
 
@@ -26,11 +27,19 @@ interface SetOptions {
     children?: Node | Node[] | string
 }
 
+interface IntoOptions {
+    times?: number,
+    at?: number
+}
+
 interface ElementBuilderObject {
     isElementBuilder: boolean
     html?: string
+    el: Element
     element: Element
     referenceMap: ReferenceMap
+    interval?: number
+    getRef: (query: string) => any
 }
 
 
@@ -47,5 +56,6 @@ interface ProcessedObject {
     [key: string]: {
         value: any,
         rules: RuleMap
+        hasRules: () => boolean
     }
 }
