@@ -7,11 +7,11 @@ import * as Setter from './Setter'
 const ElementBuilder = function(this: any, source: Element | string)
 {
     if (!Check.isValidSource(source)) {
-        new ElementBuilderError('Invalid source input (string or Element expected)', source)
+        new ElementBuilderError('Invalid source input', source)
         return
     }
 
-    const element: Element = Setter.sourceElement(source)
+    const element: Element = Setter.element(source)
     const referenceMap: ReferenceMap = new Map([['window', window]])
 
     return {

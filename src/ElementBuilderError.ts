@@ -10,7 +10,7 @@ export default class ElementBuilderError extends Error
         console.warn(
             `${this.name}: ${this.message}:\n`,
             this.suspect, '\n',
-            this.stack
+            // this.stack
         )
     }
 }

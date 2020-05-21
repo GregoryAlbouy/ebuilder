@@ -3,9 +3,36 @@ import * as Check from './Check'
 import * as Parse from './Parse'
 import * as Rule from './Rule'
 
+export function element(source: string | Element): Element {
+    const hasRule = (input: string) => input.charAt(0) === '@'
 
-export function sourceElement(source: any): Element {
-    return Check.isTypeOf(source, 'string') ? document.createElement(source) : source
+    const inputType = (input: string) => /^<.*>$/.test(input) ? 'html' : 'element'
+
+    const getElementFromHTML = (value: string) => {
+        const template = document.createElement('template')
+        template.innerHTML = value
+        return template.content.firstElementChild
+    }
+
+    const ruleMap: FunctionObject = {
+        'html': (value: any) => getElementFromHTML(value),
+        'select': (value: any) => document.querySelector(value), // TODO: allow choice of ELEMENT.querySelector,
+        'element': (value: any) => document.createElement(value)
+    }
+
+    if (source instanceof Element) return source
+
+    if (hasRule(source)) {
+        const { rule, value } = Parse.elementStringSource(source)
+    
+        if (!value) new ElementBuilderError('Invalid ElBuilder source input', source)
+    
+        const safeRule = rule ?? 'element'
+    
+        return ruleMap[safeRule](value)
+    }
+
+    return ruleMap[inputType(source)](source)
 }
 
 export function Properties(this: ElementBuilderObject, properties: AnyObject = {}): void {

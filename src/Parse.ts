@@ -1,5 +1,20 @@
 import * as Check from './Check'
 
+export function elementStringSource (source: string) {
+    const Rrule = /^@(\w+):/
+    const Rvalue = /:(.+)?/
+
+    const ruleMatch = source.match(Rrule)
+    const valueMatch = source.match(Rvalue)
+
+    const safeMatch = (match: any) => match ? match[1] : ''
+
+    return {
+        rule: safeMatch(ruleMatch),
+        value: safeMatch(valueMatch)
+    }
+}
+
 export function eventInput(this: ElementBuilderObject, eventInput: string) {
     const elementFrom = (getRefResult: any) => {
         return 'isElementBuilder' in getRefResult ? getRefResult.element : getRefResult

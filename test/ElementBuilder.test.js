@@ -3,21 +3,37 @@ const Test = {
     constructor: (errors) => {
         console.log('---- MAIN PARAMETER ----')
 
+        const log = (v, i) => console.log(`${i}:`, v)
+
         if (!errors) {
             console.log('-- VALID --')
 
-            console.log(ElBuilder('div'))
-            console.log(ElBuilder(document.createElement('div')))
-            console.log(ElBuilder(ElBuilder('div').element))
-            console.log(`${ElBuilder('div')}`) // toString() -> elt.outerHTML
+
+            const validEntries = [
+                ElBuilder('div').into(document.body),
+                ElBuilder(document.createElement('div')),
+                ElBuilder(ElBuilder('div').element),
+                ElBuilder('@select:div:nth-child(1)'),
+                ElBuilder('@html:<div><span></span></div>'),
+                ElBuilder('<div><span></span></div>'),
+                `${ElBuilder('<ul><li></ul>')}` // toString() -> elt.outerHTML
+            ]
+
+            validEntries.forEach(log)
+
+
         } else {
             console.log('-- ERRORS --')
 
-            console.log(ElBuilder(true))
-            console.log(ElBuilder(42))
-            console.log(ElBuilder([]))
-            console.log(ElBuilder({}))
-            console.log(ElBuilder(() => {}))
+            const invalidEntries = [
+                ElBuilder(true),
+                ElBuilder(42),
+                ElBuilder([]),
+                ElBuilder({}),
+                ElBuilder(() => {})
+            ]
+
+            invalidEntries.forEach(log)
         }
     },
 
@@ -121,12 +137,12 @@ const Test = {
 }
 
 // Test.constructor(false)
-// Test.constructor(true)
+Test.constructor(true)
 
 // Test.setters(false)
 // Test.setters(true)
 
-Test.insertions(false)
+// Test.insertions(false)
 // Test.insertions(true)
 
 // Test.rules(false)

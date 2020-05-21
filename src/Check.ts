@@ -54,6 +54,10 @@ export const isEventTupleArray = (subject: any): boolean => {
     )
 }
 
+export const isElement = (subject: any): boolean => {
+    return subject instanceof Element
+}
+
 export const isElementBuilder = (subject: any): boolean => {
     return (
         subject instanceof Object
@@ -71,7 +75,9 @@ export const isValidChild = (child: any): boolean => {
 }
 
 export const isValidSource = (source: any): boolean => {
-    return source instanceof Element || typeOf(source) === 'string'
+    return (
+        source instanceof Element || isTypeOf(source, 'string')
+    )
 }
 
 export const isValidSwap = (element: Element, swapped: Element): boolean => {

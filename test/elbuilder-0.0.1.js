@@ -98,7 +98,7 @@ var ElBuilder =
 
 /* Type checks */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isNamedFunction = exports.hasName = exports.isValidTarget = exports.isValidSwap = exports.isValidSource = exports.isValidChild = exports.isElementBuilder = exports.isEventTupleArray = exports.isEventTuple = exports.isStringObject = exports.isArrayArray = exports.isArray = exports.isFunction = exports.isNumber = exports.isTypeOf = exports.typeOf = void 0;
+exports.isNamedFunction = exports.hasName = exports.isValidTarget = exports.isValidSwap = exports.isValidSource = exports.isValidChild = exports.isElementBuilder = exports.isElement = exports.isEventTupleArray = exports.isEventTuple = exports.isStringObject = exports.isArrayArray = exports.isArray = exports.isFunction = exports.isNumber = exports.isTypeOf = exports.typeOf = void 0;
 exports.typeOf = (s) => {
     return `${{}.toString.call(s)}`
         .replace(/^\[object ([a-z]+)\]$/i, '$1')
@@ -136,6 +136,9 @@ exports.isEventTupleArray = (subject) => {
     return (exports.isTypeOf(subject, 'array')
         && subject.every(exports.isEventTuple));
 };
+exports.isElement = (subject) => {
+    return subject instanceof Element;
+};
 exports.isElementBuilder = (subject) => {
     return (subject instanceof Object
         && 'isElementBuilder' in subject && 'el' in subject
@@ -147,7 +150,7 @@ exports.isValidChild = (child) => {
         || child.isElementBuilder);
 };
 exports.isValidSource = (source) => {
-    return source instanceof Element || exports.typeOf(source) === 'string';
+    return (source instanceof Element || exports.isTypeOf(source, 'string'));
 };
 exports.isValidSwap = (element, swapped) => {
     return (element instanceof HTMLElement && swapped instanceof HTMLElement
@@ -184,10 +187,10 @@ const Parse = __webpack_require__(/*! ./Parse */ "./src/Parse.ts");
 const Setter = __webpack_require__(/*! ./Setter */ "./src/Setter.ts");
 const ElementBuilder = function (source) {
     if (!Check.isValidSource(source)) {
-        new ElementBuilderError_1.default('Invalid source input (string or Element expected)', source);
+        new ElementBuilderError_1.default('Invalid source input', source);
         return;
     }
-    const element = Setter.sourceElement(source);
+    const element = Setter.element(source);
     const referenceMap = new Map([['window', window]]);
     return {
         el: element,
@@ -458,7 +461,7 @@ class ElementBuilderError extends Error {
         super(message);
         this.name = 'ElementBuilderError';
         this.suspect = suspect;
-        console.warn(`${this.name}: ${this.message}:\n`, this.suspect, '\n', this.stack);
+        console.warn(`${this.name}: ${this.message}:\n`, this.suspect, '\n');
     }
 }
 exports.default = ElementBuilderError;
@@ -476,8 +479,20 @@ exports.default = ElementBuilderError;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sourceObject = exports.getComputedValue = exports.eventInput = void 0;
+exports.sourceObject = exports.getComputedValue = exports.eventInput = exports.elementStringSource = void 0;
 const Check = __webpack_require__(/*! ./Check */ "./src/Check.ts");
+function elementStringSource(source) {
+    const Rrule = /^@(\w+):/;
+    const Rvalue = /:(.+)?/;
+    const ruleMatch = source.match(Rrule);
+    const valueMatch = source.match(Rvalue);
+    const safeMatch = (match) => match ? match[1] : '';
+    return {
+        rule: safeMatch(ruleMatch),
+        value: safeMatch(valueMatch)
+    };
+}
+exports.elementStringSource = elementStringSource;
 function eventInput(eventInput) {
     const elementFrom = (getRefResult) => {
         return 'isElementBuilder' in getRefResult ? getRefResult.element : getRefResult;
@@ -613,15 +628,36 @@ exports.For = For;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.process = exports.Children = exports.Listeners = exports.Styles = exports.Attributes = exports.Properties = exports.sourceElement = void 0;
+exports.process = exports.Children = exports.Listeners = exports.Styles = exports.Attributes = exports.Properties = exports.element = void 0;
 const ElementBuilderError_1 = __webpack_require__(/*! ./ElementBuilderError */ "./src/ElementBuilderError.ts");
 const Check = __webpack_require__(/*! ./Check */ "./src/Check.ts");
 const Parse = __webpack_require__(/*! ./Parse */ "./src/Parse.ts");
 const Rule = __webpack_require__(/*! ./Rule */ "./src/Rule.ts");
-function sourceElement(source) {
-    return Check.isTypeOf(source, 'string') ? document.createElement(source) : source;
+function element(source) {
+    const hasRule = (input) => input.charAt(0) === '@';
+    const inputType = (input) => /^<.*>$/.test(input) ? 'html' : 'element';
+    const getElementFromHTML = (value) => {
+        const template = document.createElement('template');
+        template.innerHTML = value;
+        return template.content.firstElementChild;
+    };
+    const ruleMap = {
+        'html': (value) => getElementFromHTML(value),
+        'select': (value) => document.querySelector(value),
+        'element': (value) => document.createElement(value)
+    };
+    if (source instanceof Element)
+        return source;
+    if (hasRule(source)) {
+        const { rule, value } = Parse.elementStringSource(source);
+        if (!value)
+            new ElementBuilderError_1.default('Invalid ElBuilder source input', source);
+        const safeRule = rule !== null && rule !== void 0 ? rule : 'element';
+        return ruleMap[safeRule](value);
+    }
+    return ruleMap[inputType(source)](source);
 }
-exports.sourceElement = sourceElement;
+exports.element = element;
 function Properties(properties = {}) {
     const setProperty = (name, value) => {
         this.element[name] = value;
