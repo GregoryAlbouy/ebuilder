@@ -3,7 +3,9 @@
   "version": "0.0.3",
   "description": "Highly configurable and easily manipulable elements in a single declaration, with a functionnal touch.",
   "main": "./package/index.js",
-  "types": "index.d.ts",
+  "files": [
+    "./package/"
+  ],
   "scripts": {
     "start": "NODE_ENV=development webpack --watch",
     "dev": "NODE_ENV=development webpack",
