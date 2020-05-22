@@ -219,15 +219,6 @@ var EBuilder = function EBuilder(source) {
 
       return this;
     },
-    setStyle: function setStyle() {
-      var styles = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-      if (element instanceof HTMLElement) {
-        Object.assign(element.style, styles);
-      }
-
-      return this;
-    },
     textContent: function textContent(input) {
       element.textContent = input;
       return this;
