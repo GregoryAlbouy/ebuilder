@@ -1,6 +1,6 @@
 {
   "name": "ebuilder-js",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Highly configurable and easily manipulable elements in a single declaration, with a functionnal touch.",
   "main": "./index.js",
   "repository": {
