@@ -1,1 +1,1 @@
-module.exports = require('./EBuilder').default
+module.exports = require('./modules/EBuilder').default

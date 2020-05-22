@@ -87,104 +87,35 @@ var EBuilder =
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/Check.ts":
+/***/ "./src/index.ts":
 /*!**********************!*\
-  !*** ./src/Check.ts ***!
+  !*** ./src/index.ts ***!
   \**********************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-/* Type checks */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isNamedFunction = exports.hasName = exports.isValidTarget = exports.isValidSwap = exports.isValidSource = exports.isValidChild = exports.isEBuilder = exports.isElement = exports.isEventTupleArray = exports.isEventTuple = exports.isStringObject = exports.isArrayArray = exports.isArray = exports.isFunction = exports.isNumber = exports.isTypeOf = exports.typeOf = void 0;
-exports.typeOf = (s) => {
-    return `${{}.toString.call(s)}`
-        .replace(/^\[object ([a-z]+)\]$/i, '$1')
-        .toLowerCase();
-};
-exports.isTypeOf = (x, ...types) => {
-    return types
-        .map((type) => exports.typeOf(x) === type.toLocaleLowerCase())
-        .reduce((a, c) => a || c);
-};
-exports.isNumber = (subject) => {
-    return exports.isTypeOf(subject, 'number');
-};
-exports.isFunction = (subject) => {
-    return exports.isTypeOf(subject, 'function');
-};
-exports.isArray = (subject) => {
-    return exports.isTypeOf(subject, 'array');
-};
-exports.isArrayArray = (subject) => {
-    return (exports.isTypeOf(subject, 'array')
-        && subject.every((item) => exports.isTypeOf(item, 'array')));
-};
-exports.isStringObject = (subject) => {
-    return (exports.isTypeOf(subject, 'object')
-        && Object.keys(subject).every((item) => exports.isTypeOf(item, 'string')));
-};
-exports.isEventTuple = (subject) => {
-    return (exports.isTypeOf(subject, 'array')
-        && exports.isTypeOf(subject[0], 'string')
-        && exports.isTypeOf(subject[1], 'function')
-        && (!subject[2] || exports.isTypeOf(subject[2], 'boolean', 'object')));
-};
-exports.isEventTupleArray = (subject) => {
-    return (exports.isTypeOf(subject, 'array')
-        && subject.every(exports.isEventTuple));
-};
-exports.isElement = (subject) => {
-    return subject instanceof Element;
-};
-exports.isEBuilder = (subject) => {
-    return (subject instanceof Object
-        && 'isEBuilder' in subject && 'el' in subject
-        && subject.isEBuilder && subject.el);
-};
-exports.isValidChild = (child) => {
-    return (exports.isTypeOf(child, 'string', 'number')
-        || child instanceof Node
-        || child.isEBuilder);
-};
-exports.isValidSource = (source) => {
-    return (source instanceof Element || exports.isTypeOf(source, 'string'));
-};
-exports.isValidSwap = (element, swapped) => {
-    return (element instanceof HTMLElement && swapped instanceof HTMLElement
-        && (!!element.parentNode && !!swapped.parentNode)
-        && element !== swapped);
-};
-exports.isValidTarget = (target) => {
-    return exports.isEBuilder(target) || target instanceof Element;
-};
-exports.hasName = (input) => {
-    return !!input.name;
-};
-exports.isNamedFunction = (input) => {
-    return exports.isFunction(input) && exports.hasName(input);
-};
+module.exports = __webpack_require__(/*! ./modules/EBuilder */ "./src/modules/EBuilder.ts").default;
 
 
 /***/ }),
 
-/***/ "./src/EBuilder.ts":
-/*!*************************!*\
-  !*** ./src/EBuilder.ts ***!
-  \*************************/
+/***/ "./src/modules/EBuilder.ts":
+/*!*********************************!*\
+  !*** ./src/modules/EBuilder.ts ***!
+  \*********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const EBuilderAnimation_1 = __webpack_require__(/*! ./EBuilderAnimation */ "./src/EBuilderAnimation.ts");
-const EBuilderError_1 = __webpack_require__(/*! ./EBuilderError */ "./src/EBuilderError.ts");
-const Check = __webpack_require__(/*! ./Check */ "./src/Check.ts");
-const Parse = __webpack_require__(/*! ./Parse */ "./src/Parse.ts");
-const Setter = __webpack_require__(/*! ./Setter */ "./src/Setter.ts");
+const EBuilderAnimation_1 = __webpack_require__(/*! ./EBuilderAnimation */ "./src/modules/EBuilderAnimation.ts");
+const EBuilderError_1 = __webpack_require__(/*! ./EBuilderError */ "./src/modules/EBuilderError.ts");
+const Check = __webpack_require__(/*! ../utils/Check */ "./src/utils/Check.ts");
+const Parse = __webpack_require__(/*! ../utils/Parse */ "./src/utils/Parse.ts");
+const Setter = __webpack_require__(/*! ../utils/Setter */ "./src/utils/Setter.ts");
 const EBuilder = function (source) {
     if (!Check.isValidSource(source)) {
         new EBuilderError_1.default('Invalid source input', source);
@@ -331,12 +262,6 @@ const EBuilder = function (source) {
             element.classList.add(...[].concat(...classes));
             return this;
         },
-        setStyle: function (styles = {}) {
-            if (element instanceof HTMLElement) {
-                Object.assign(element.style, styles);
-            }
-            return this;
-        },
         textContent: function (input) {
             element.textContent = input;
             return this;
@@ -354,17 +279,17 @@ exports.default = EBuilder;
 
 /***/ }),
 
-/***/ "./src/EBuilderAnimation.ts":
-/*!**********************************!*\
-  !*** ./src/EBuilderAnimation.ts ***!
-  \**********************************/
+/***/ "./src/modules/EBuilderAnimation.ts":
+/*!******************************************!*\
+  !*** ./src/modules/EBuilderAnimation.ts ***!
+  \******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const EBuilderError_1 = __webpack_require__(/*! ./EBuilderError */ "./src/EBuilderError.ts");
+const EBuilderError_1 = __webpack_require__(/*! ./EBuilderError */ "./src/modules/EBuilderError.ts");
 class EBuilderAnimation {
     constructor(duration) {
         this.duration = 200;
@@ -422,10 +347,10 @@ exports.default = EBuilderAnimation;
 
 /***/ }),
 
-/***/ "./src/EBuilderError.ts":
-/*!******************************!*\
-  !*** ./src/EBuilderError.ts ***!
-  \******************************/
+/***/ "./src/modules/EBuilderError.ts":
+/*!**************************************!*\
+  !*** ./src/modules/EBuilderError.ts ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -445,10 +370,164 @@ exports.default = EBuilderError;
 
 /***/ }),
 
-/***/ "./src/Parse.ts":
-/*!**********************!*\
-  !*** ./src/Parse.ts ***!
-  \**********************/
+/***/ "./src/modules/Rule.ts":
+/*!*****************************!*\
+  !*** ./src/modules/Rule.ts ***!
+  \*****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.For = exports.If = exports.Timeout = exports.Interval = exports.Once = exports.On = exports.RuleMap = void 0;
+const EBuilderError_1 = __webpack_require__(/*! ./EBuilderError */ "./src/modules/EBuilderError.ts");
+const Parse = __webpack_require__(/*! ../utils/Parse */ "./src/utils/Parse.ts");
+exports.RuleMap = {
+    on: On,
+    once: Once,
+    interval: Interval,
+    timeout: Timeout,
+    if: If,
+    for: For
+};
+function handleEvent(eventInput, callback, isOnce) {
+    const [type, emitter] = Parse.eventInput.call(this, eventInput);
+    const once = () => {
+        emitter.removeEventListener(type, once);
+        callback();
+    };
+    const handler = isOnce ? once : callback;
+    if ('addEventListener' in emitter)
+        emitter.addEventListener(type, handler);
+}
+function On(eventInput, callback) {
+    handleEvent.call(this, eventInput, callback);
+}
+exports.On = On;
+function Once(eventInput, callback) {
+    handleEvent.call(this, eventInput, callback, true);
+}
+exports.Once = Once;
+function Interval(rate, callback) {
+    this.interval = setInterval(callback, parseInt(rate));
+}
+exports.Interval = Interval;
+function Timeout(delay, callback) {
+    setTimeout(callback, parseInt(delay));
+}
+exports.Timeout = Timeout;
+function If(conditionId, callback) {
+    if (!this.referenceMap.has(conditionId)) {
+        new EBuilderError_1.default(`Condition id not found. Make sure to provide the corresponding pair [Function: boolean, conditionId: string] as an argument of the .given() method before using an @if rule `, conditionId);
+    }
+    else if (this.referenceMap.get(conditionId)()) {
+        callback();
+    }
+}
+exports.If = If;
+function For(conditionId, callback) {
+    const array = this.getRef(conditionId);
+    console.log(array, conditionId);
+    array.forEach((v, i, a) => {
+        // TODO: find a way to get the (function) value of an entry with @for rule
+        // const realValue = entryValue.bind.call(this, v, i a)
+        console.log(callback);
+        callback();
+    });
+}
+exports.For = For;
+
+
+/***/ }),
+
+/***/ "./src/utils/Check.ts":
+/*!****************************!*\
+  !*** ./src/utils/Check.ts ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/* Type checks */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isNamedFunction = exports.hasName = exports.isValidTarget = exports.isValidSwap = exports.isValidSource = exports.isValidChild = exports.isEBuilder = exports.isElement = exports.isEventTupleArray = exports.isEventTuple = exports.isStringObject = exports.isArrayArray = exports.isArray = exports.isFunction = exports.isNumber = exports.isTypeOf = exports.typeOf = void 0;
+exports.typeOf = (s) => {
+    return `${{}.toString.call(s)}`
+        .replace(/^\[object ([a-z]+)\]$/i, '$1')
+        .toLowerCase();
+};
+exports.isTypeOf = (x, ...types) => {
+    return types
+        .map((type) => exports.typeOf(x) === type.toLocaleLowerCase())
+        .reduce((a, c) => a || c);
+};
+exports.isNumber = (subject) => {
+    return exports.isTypeOf(subject, 'number');
+};
+exports.isFunction = (subject) => {
+    return exports.isTypeOf(subject, 'function');
+};
+exports.isArray = (subject) => {
+    return exports.isTypeOf(subject, 'array');
+};
+exports.isArrayArray = (subject) => {
+    return (exports.isTypeOf(subject, 'array')
+        && subject.every((item) => exports.isTypeOf(item, 'array')));
+};
+exports.isStringObject = (subject) => {
+    return (exports.isTypeOf(subject, 'object')
+        && Object.keys(subject).every((item) => exports.isTypeOf(item, 'string')));
+};
+exports.isEventTuple = (subject) => {
+    return (exports.isTypeOf(subject, 'array')
+        && exports.isTypeOf(subject[0], 'string')
+        && exports.isTypeOf(subject[1], 'function')
+        && (!subject[2] || exports.isTypeOf(subject[2], 'boolean', 'object')));
+};
+exports.isEventTupleArray = (subject) => {
+    return (exports.isTypeOf(subject, 'array')
+        && subject.every(exports.isEventTuple));
+};
+exports.isElement = (subject) => {
+    return subject instanceof Element;
+};
+exports.isEBuilder = (subject) => {
+    return (subject instanceof Object
+        && 'isEBuilder' in subject && 'el' in subject
+        && subject.isEBuilder && subject.el);
+};
+exports.isValidChild = (child) => {
+    return (exports.isTypeOf(child, 'string', 'number')
+        || child instanceof Node
+        || child.isEBuilder);
+};
+exports.isValidSource = (source) => {
+    return (source instanceof Element || exports.isTypeOf(source, 'string'));
+};
+exports.isValidSwap = (element, swapped) => {
+    return (element instanceof HTMLElement && swapped instanceof HTMLElement
+        && (!!element.parentNode && !!swapped.parentNode)
+        && element !== swapped);
+};
+exports.isValidTarget = (target) => {
+    return exports.isEBuilder(target) || target instanceof Element;
+};
+exports.hasName = (input) => {
+    return !!input.name;
+};
+exports.isNamedFunction = (input) => {
+    return exports.isFunction(input) && exports.hasName(input);
+};
+
+
+/***/ }),
+
+/***/ "./src/utils/Parse.ts":
+/*!****************************!*\
+  !*** ./src/utils/Parse.ts ***!
+  \****************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -456,7 +535,7 @@ exports.default = EBuilderError;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sourceObject = exports.getComputedValue = exports.eventInput = exports.elementStringSource = void 0;
-const Check = __webpack_require__(/*! ./Check */ "./src/Check.ts");
+const Check = __webpack_require__(/*! ./Check */ "./src/utils/Check.ts");
 function elementStringSource(source) {
     const Rrule = /^@(\w+):/;
     const Rvalue = /:(.+)?/;
@@ -523,81 +602,10 @@ exports.sourceObject = (source) => {
 
 /***/ }),
 
-/***/ "./src/Rule.ts":
-/*!*********************!*\
-  !*** ./src/Rule.ts ***!
-  \*********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.For = exports.If = exports.Timeout = exports.Interval = exports.Once = exports.On = exports.RuleMap = void 0;
-const EBuilderError_1 = __webpack_require__(/*! ./EBuilderError */ "./src/EBuilderError.ts");
-const Parse = __webpack_require__(/*! ./Parse */ "./src/Parse.ts");
-exports.RuleMap = {
-    on: On,
-    once: Once,
-    interval: Interval,
-    timeout: Timeout,
-    if: If,
-    for: For
-};
-function handleEvent(eventInput, callback, isOnce) {
-    const [type, emitter] = Parse.eventInput.call(this, eventInput);
-    const once = () => {
-        emitter.removeEventListener(type, once);
-        callback();
-    };
-    const handler = isOnce ? once : callback;
-    if ('addEventListener' in emitter)
-        emitter.addEventListener(type, handler);
-}
-function On(eventInput, callback) {
-    handleEvent.call(this, eventInput, callback);
-}
-exports.On = On;
-function Once(eventInput, callback) {
-    handleEvent.call(this, eventInput, callback, true);
-}
-exports.Once = Once;
-function Interval(rate, callback) {
-    this.interval = setInterval(callback, parseInt(rate));
-}
-exports.Interval = Interval;
-function Timeout(delay, callback) {
-    setTimeout(callback, parseInt(delay));
-}
-exports.Timeout = Timeout;
-function If(conditionId, callback) {
-    if (!this.referenceMap.has(conditionId)) {
-        new EBuilderError_1.default(`Condition id not found. Make sure to provide the corresponding pair [Function: boolean, conditionId: string] as an argument of the .given() method before using an @if rule `, conditionId);
-    }
-    else if (this.referenceMap.get(conditionId)()) {
-        callback();
-    }
-}
-exports.If = If;
-function For(conditionId, callback) {
-    const array = this.getRef(conditionId);
-    console.log(array, conditionId);
-    array.forEach((v, i, a) => {
-        // TODO: find a way to get the (function) value of an entry with @for rule
-        // const realValue = entryValue.bind.call(this, v, i a)
-        console.log(callback);
-        callback();
-    });
-}
-exports.For = For;
-
-
-/***/ }),
-
-/***/ "./src/Setter.ts":
-/*!***********************!*\
-  !*** ./src/Setter.ts ***!
-  \***********************/
+/***/ "./src/utils/Setter.ts":
+/*!*****************************!*\
+  !*** ./src/utils/Setter.ts ***!
+  \*****************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -605,10 +613,10 @@ exports.For = For;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.process = exports.Children = exports.Listeners = exports.Styles = exports.Attributes = exports.Properties = exports.element = void 0;
-const EBuilderError_1 = __webpack_require__(/*! ./EBuilderError */ "./src/EBuilderError.ts");
-const Check = __webpack_require__(/*! ./Check */ "./src/Check.ts");
-const Parse = __webpack_require__(/*! ./Parse */ "./src/Parse.ts");
-const Rule = __webpack_require__(/*! ./Rule */ "./src/Rule.ts");
+const EBuilderError_1 = __webpack_require__(/*! ../modules/EBuilderError */ "./src/modules/EBuilderError.ts");
+const Check = __webpack_require__(/*! ./Check */ "./src/utils/Check.ts");
+const Parse = __webpack_require__(/*! ./Parse */ "./src/utils/Parse.ts");
+const Rule = __webpack_require__(/*! ../modules/Rule */ "./src/modules/Rule.ts");
 function element(source) {
     const hasRule = (input) => input.charAt(0) === '@';
     const inputType = (input) => /^<.*>$/.test(input) ? 'html' : 'element';
@@ -727,20 +735,6 @@ function process(source, callback, keyRestriction) {
     Object.keys(parsedObject).forEach(processEntry);
 }
 exports.process = process;
-
-
-/***/ }),
-
-/***/ "./src/index.ts":
-/*!**********************!*\
-  !*** ./src/index.ts ***!
-  \**********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-module.exports = __webpack_require__(/*! ./EBuilder */ "./src/EBuilder.ts").default;
 
 
 /***/ })

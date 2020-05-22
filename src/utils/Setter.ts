@@ -1,7 +1,7 @@
-import EBuilderError from './EBuilderError'
+import EBuilderError from '../modules/EBuilderError'
 import * as Check from './Check'
 import * as Parse from './Parse'
-import * as Rule from './Rule'
+import * as Rule from '../modules/Rule'
 
 export function element(source: string | Element): Element {
     const hasRule = (input: string) => input.charAt(0) === '@'

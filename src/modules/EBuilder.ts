@@ -1,8 +1,8 @@
 import EBuilderAnimation from './EBuilderAnimation'
 import EBuilderError from './EBuilderError'
-import * as Check from './Check'
-import * as Parse from './Parse'
-import * as Setter from './Setter'
+import * as Check from '../utils/Check'
+import * as Parse from '../utils/Parse'
+import * as Setter from '../utils/Setter'
 
 const EBuilder = function(this: any, source: Element | string)
 {

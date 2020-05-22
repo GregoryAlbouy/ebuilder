@@ -1,5 +1,5 @@
 import EBuilderError from './EBuilderError'
-import * as Parse from './Parse'
+import * as Parse from '../utils/Parse'
 
 export const RuleMap: FunctionObject = {
     on: On,
