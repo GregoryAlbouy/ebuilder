@@ -157,19 +157,19 @@ const EBuilder = function(this: any, source: Element | string)
             return this
         },
 
-        setAttributes: function(attributes: StringObject) {
+        setAttributes: function(attributes: StringObject | Function) {
             Setter.Attributes.call(this, attributes)
             
             return this
         },
 
-        setProperties: function(properties: AnyObject) {
+        setProperties: function(properties: AnyObject | Function) {
             Setter.Properties.call(this, properties)
 
             return this
         },
 
-        setListeners: function(listeners: EventTuple | EventTuple[]) {
+        setListeners: function(listeners: EventTuple | EventTuple[] | Function) {
             Setter.Listeners.call(this, listeners)
 
             return this
@@ -193,15 +193,7 @@ const EBuilder = function(this: any, source: Element | string)
 
             return this
         },
-
-        setStyle: function(styles: StringObject = {}) {
-            if (element instanceof HTMLElement) {
-                Object.assign((element as HTMLElement).style, styles)
-            }
-
-            return this
-        },
-
+        
         textContent: function(input: string) {
             element.textContent = input
 

@@ -35,7 +35,7 @@ export function element(source: string | Element): Element {
     return ruleMap[inputType(source)](source)
 }
 
-export function Properties(this: EBObject, properties: AnyObject = {}): void {
+export function Properties(this: EBObject, properties: AnyObject | Function = {}): void {
     const setProperty = (name: string, value: any) => {
         (this.element as AnyObject)[name] = value
     }
@@ -43,7 +43,7 @@ export function Properties(this: EBObject, properties: AnyObject = {}): void {
     process.call(this, properties, setProperty)
 }
 
-export function Attributes(this: EBObject, attributes: StringObject = {}): void {
+export function Attributes(this: EBObject, attributes: StringObject | Function = {}): void {
     const addAttribute = (name: string, value: any) => {
         if (this.element instanceof Element) {
             this.element.setAttribute(name, value)
@@ -63,7 +63,7 @@ export function Styles(this: EBObject, styles: StringObject | Function = {}): vo
     process.call(this, styles, setStyle)
 }
 
-export function Listeners(this: EBObject, listeners: EventTuple | EventTuple[]): void {
+export function Listeners(this: EBObject, listeners: EventTuple | EventTuple[] | Function): void {
     const addListener = ([event, listener, options]: EventTuple): void => {
         this.element.addEventListener(event, listener, options)
     }

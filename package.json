@@ -1,16 +1,32 @@
 {
-  "name": "e-builder",
-  "version": "0.0.1",
-  "description": "",
-  "main": "",
+  "name": "ebuilder-js",
+  "version": "0.0.2",
+  "description": "Highly configurable and easily manipulable elements in a single declaration, with a functionnal touch.",
+  "main": "./package/index.js",
+  "types": "index.d.ts",
   "scripts": {
     "start": "NODE_ENV=development webpack --watch",
     "dev": "NODE_ENV=development webpack",
     "build": "NODE_ENV=production webpack",
-    "package": "tsc && babel package -d package"
+    "package": "tsc && babel package -d package && cp README.md package/README.md"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gregoryalbouy/e-builder.git"
+  },
+  "keywords": [
+    "html",
+    "element",
+    "builder",
+    "library",
+    "javascript"
+  ],
   "author": "Gregory Albouy",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gregoryalbouy/ebuilder/issues"
+  },
+  "homepage": "https://github.com/gregoryalbouy/ebuilder#readme",
   "devDependencies": {
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.6",

@@ -11,6 +11,29 @@ Highly configurable and manipulable elements in a single declaration, with a fun
 * single declaration
 * this binding
 
+## Install
+
+### Using npm
+
+```shell
+npm i ebuilder-js
+```
+```javascript
+import EBuilder from 'ebuilder-js'
+
+// test
+EBuilder('div').into(document.body)
+```
+
+### Using bundle
+
+```html
+<script src="./path/to/ebuilder.min.js">
+```
+```javascript
+EBuilder('div').into(document.body)
+```
+
 ## Features
 
 ## Properties
