@@ -10,9 +10,9 @@
     "package:pre": "rm -r package/*",
     "package:build": "tsc && babel package -d package",
     "package:post": "npm run package:copyStatics && npm run package:removeUnnecessary",
-    "package:copyStatics": "cp README.md package/README.md && cp src/package.json package/packages.json",
+    "package:copyStatics": "cp README.md package/README.md && cp src/package.json package/package.json",
     "package:removeUnnecessary": "rm package/index.d.ts package/declarations.js",
-    "publish": "cd package && npm publish && cd ../"
+    "package:publish": "npm publish package"
   },
   "repository": {
     "type": "git",
