@@ -2,15 +2,12 @@
   "name": "ebuilder-js",
   "version": "0.0.5",
   "description": "Highly configurable and easily manipulable elements in a single declaration, with a functionnal touch.",
-  "main": "./package/index.js",
-  "files": [
-    "./package/"
-  ],
   "scripts": {
     "start": "NODE_ENV=development webpack --watch",
     "dev": "NODE_ENV=development webpack",
     "build": "NODE_ENV=production webpack",
-    "package": "tsc && babel package -d package && cp README.md package/README.md"
+    "package": "tsc && babel package -d package && cp README.md package/README.md",
+    "publish": "cd package && npm publish & cd ../"
   },
   "repository": {
     "type": "git",
