@@ -12,7 +12,7 @@
     "package:post": "npm run package:copyStatics && npm run package:removeUnnecessary",
     "package:copyStatics": "cp README.md package/README.md && cp src/package.json package/packages.json",
     "package:removeUnnecessary": "rm package/index.d.ts package/declarations.js",
-    "publish": "cd package && npm publish & cd ../"
+    "publish": "cd package && npm publish && cd ../"
   },
   "repository": {
     "type": "git",
