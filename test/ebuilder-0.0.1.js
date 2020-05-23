@@ -114,6 +114,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const EBuilderAnimation_1 = __webpack_require__(/*! ./EBuilderAnimation */ "./src/modules/EBuilderAnimation.ts");
 const EBuilderError_1 = __webpack_require__(/*! ./EBuilderError */ "./src/modules/EBuilderError.ts");
 const Check = __webpack_require__(/*! ../utils/Check */ "./src/utils/Check.ts");
+const DOM = __webpack_require__(/*! ../utils/DOM */ "./src/utils/DOM.ts");
 const Parse = __webpack_require__(/*! ../utils/Parse */ "./src/utils/Parse.ts");
 const Setter = __webpack_require__(/*! ../utils/Setter */ "./src/utils/Setter.ts");
 const EBuilder = function (source) {
@@ -126,7 +127,7 @@ const EBuilder = function (source) {
     return {
         el: element,
         element: element,
-        htmlContent: function () { return this.element.innerHTML; },
+        getHTML: function () { return this.element.innerHTML; },
         isEBuilder: true,
         referenceMap: referenceMap,
         getRef: function (query) {
@@ -135,7 +136,7 @@ const EBuilder = function (source) {
         given: function (...references) {
             const register = (ref) => {
                 if (Check.isArray(ref)) {
-                    const [target, id] = ref;
+                    const [target, id] = ref; // come back here later
                     this.referenceMap.set(id, target);
                 }
                 else if (Check.isNamedFunction(ref)) {
@@ -151,7 +152,7 @@ const EBuilder = function (source) {
             if (!Check.isValidTarget(targetInput))
                 return;
             const getTarget = (target) => {
-                return Check.isEBuilder(target)
+                return Check.isEBObject(target)
                     ? target.element
                     : target;
             };
@@ -176,19 +177,22 @@ const EBuilder = function (source) {
             this.element.dispatchEvent(new CustomEvent('ebuilderinsert'));
             return this;
         },
-        after: function (node) {
-            node.insertAdjacentElement('afterend', element);
+        after: function (inputTarget) {
+            const target = Parse.getTrueElement(inputTarget);
+            target.insertAdjacentElement('afterend', element);
             this.element.dispatchEvent(new CustomEvent('ebuilderinsert'));
             return this;
         },
-        before: function (node) {
-            node.insertAdjacentElement('beforebegin', element);
+        before: function (inputTarget) {
+            const target = Parse.getTrueElement(inputTarget);
+            target.insertAdjacentElement('beforebegin', element);
             this.element.dispatchEvent(new CustomEvent('ebuilderinsert'));
             return this;
         },
-        replace: function (node) {
+        replace: function (inputTarget) {
             var _a;
-            (_a = node.parentNode) === null || _a === void 0 ? void 0 : _a.replaceChild(element, node);
+            const target = Parse.getTrueElement(inputTarget);
+            (_a = target.parentNode) === null || _a === void 0 ? void 0 : _a.replaceChild(element, target);
             this.element.dispatchEvent(new CustomEvent('ebuilderinsert'));
             return this;
         },
@@ -227,6 +231,7 @@ const EBuilder = function (source) {
                 attributes: Setter.Attributes,
                 listeners: Setter.Listeners,
                 children: Setter.Children,
+                style: Setter.Style
             };
             const setOption = (name, value) => {
                 if (!(name in Options))
@@ -253,17 +258,17 @@ const EBuilder = function (source) {
             Setter.Children.call(this, children);
             return this;
         },
-        setStyles: function (styles) {
-            const value = Parse.getComputedValue.call(this, styles);
-            Setter.Styles.call(this, value);
+        setStyle: function (style) {
+            // const value = Parse.getComputedValue.call(this, style)
+            Setter.Style.call(this, style);
             return this;
         },
         setClasses: function (...classes) {
             element.classList.add(...[].concat(...classes));
             return this;
         },
-        textContent: function (input) {
-            element.textContent = input;
+        setContent: function (input, at) {
+            DOM.insert(input, element, at);
             return this;
         },
         toString: function () {
@@ -452,56 +457,58 @@ exports.For = For;
 
 /* Type checks */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isNamedFunction = exports.hasName = exports.isValidTarget = exports.isValidSwap = exports.isValidSource = exports.isValidChild = exports.isEBuilder = exports.isElement = exports.isEventTupleArray = exports.isEventTuple = exports.isStringObject = exports.isArrayArray = exports.isArray = exports.isFunction = exports.isNumber = exports.isTypeOf = exports.typeOf = void 0;
-exports.typeOf = (s) => {
-    return `${{}.toString.call(s)}`
+exports.isNamedFunction = exports.hasName = exports.isValidTarget = exports.isValidSwap = exports.isValidSource = exports.isValidChild = exports.isEBObject = exports.isElement = exports.isEventTupleArray = exports.isEventTuple = exports.isStringObject = exports.isArrayArray = exports.isArray = exports.isFunction = exports.isString = exports.isNumber = exports.isTypeOf = exports.typeOf = void 0;
+exports.typeOf = (input) => {
+    return `${{}.toString.call(input)}`
         .replace(/^\[object ([a-z]+)\]$/i, '$1')
         .toLowerCase();
 };
-exports.isTypeOf = (x, ...types) => {
+exports.isTypeOf = (input, ...types) => {
     return types
-        .map((type) => exports.typeOf(x) === type.toLocaleLowerCase())
+        .map((type) => exports.typeOf(input) === type.toLocaleLowerCase())
         .reduce((a, c) => a || c);
 };
-exports.isNumber = (subject) => {
-    return exports.isTypeOf(subject, 'number');
+exports.isNumber = (input) => {
+    return exports.isTypeOf(input, 'number');
 };
-exports.isFunction = (subject) => {
-    return exports.isTypeOf(subject, 'function');
+exports.isString = (input) => {
+    return exports.isTypeOf(input, 'string');
 };
-exports.isArray = (subject) => {
-    return exports.isTypeOf(subject, 'array');
+exports.isFunction = (input) => {
+    return exports.isTypeOf(input, 'function');
 };
-exports.isArrayArray = (subject) => {
-    return (exports.isTypeOf(subject, 'array')
-        && subject.every((item) => exports.isTypeOf(item, 'array')));
+exports.isArray = (input) => {
+    return exports.isTypeOf(input, 'array');
 };
-exports.isStringObject = (subject) => {
-    return (exports.isTypeOf(subject, 'object')
-        && Object.keys(subject).every((item) => exports.isTypeOf(item, 'string')));
+exports.isArrayArray = (input) => {
+    return (exports.isTypeOf(input, 'array')
+        && input.every((item) => exports.isTypeOf(item, 'array')));
 };
-exports.isEventTuple = (subject) => {
-    return (exports.isTypeOf(subject, 'array')
-        && exports.isTypeOf(subject[0], 'string')
-        && exports.isTypeOf(subject[1], 'function')
-        && (!subject[2] || exports.isTypeOf(subject[2], 'boolean', 'object')));
+exports.isStringObject = (input) => {
+    return (exports.isTypeOf(input, 'object')
+        && Object.keys(input).every((item) => exports.isTypeOf(item, 'string')));
 };
-exports.isEventTupleArray = (subject) => {
-    return (exports.isTypeOf(subject, 'array')
-        && subject.every(exports.isEventTuple));
+exports.isEventTuple = (input) => {
+    return (exports.isTypeOf(input, 'array')
+        && exports.isTypeOf(input[0], 'string')
+        && exports.isTypeOf(input[1], 'function')
+        && (!input[2] || exports.isTypeOf(input[2], 'boolean', 'object')));
 };
-exports.isElement = (subject) => {
-    return subject instanceof Element;
+exports.isEventTupleArray = (input) => {
+    return (exports.isTypeOf(input, 'array')
+        && input.every(exports.isEventTuple));
 };
-exports.isEBuilder = (subject) => {
-    return (subject instanceof Object
-        && 'isEBuilder' in subject && 'el' in subject
-        && subject.isEBuilder && subject.el);
+exports.isElement = (input) => {
+    return input instanceof Element;
 };
-exports.isValidChild = (child) => {
-    return (exports.isTypeOf(child, 'string', 'number')
-        || child instanceof Node
-        || child.isEBuilder);
+exports.isEBObject = (input) => {
+    return (input instanceof Object
+        && input.isEBuilder);
+};
+exports.isValidChild = (input) => {
+    return (exports.isTypeOf(input, 'string', 'number')
+        || input instanceof Node
+        || input.isEBuilder);
 };
 exports.isValidSource = (source) => {
     return (source instanceof Element || exports.isTypeOf(source, 'string'));
@@ -512,7 +519,7 @@ exports.isValidSwap = (element, swapped) => {
         && element !== swapped);
 };
 exports.isValidTarget = (target) => {
-    return exports.isEBuilder(target) || target instanceof Element;
+    return exports.isEBObject(target) || target instanceof Element;
 };
 exports.hasName = (input) => {
     return !!input.name;
@@ -520,6 +527,48 @@ exports.hasName = (input) => {
 exports.isNamedFunction = (input) => {
     return exports.isFunction(input) && exports.hasName(input);
 };
+
+
+/***/ }),
+
+/***/ "./src/utils/DOM.ts":
+/*!**************************!*\
+  !*** ./src/utils/DOM.ts ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.insert = void 0;
+const Check = __webpack_require__(/*! ./Check */ "./src/utils/Check.ts");
+/**
+ * In progress
+ */
+function insert(input, target, at) {
+    const posFromString = (at, childList) => {
+        const posMap = {
+            start: 0,
+            middle: Math.floor(childList.length / 2),
+            end: childList.length - 1
+        };
+        return at in posMap ? posMap[at] : posMap.end;
+    };
+    const safePos = (n, length) => {
+        return n < 0
+            ? Math.max(length - 1 + n, 0)
+            : Math.min(length - 1, n);
+    };
+    const childList = target.children;
+    const n = Check.isString(at) ? posFromString(at, childList) : Math.floor(at);
+    const p = safePos(n, childList.length);
+    if (childList.length === 0 || childList.length - 1 === p)
+        target.appendChild(input);
+    else
+        childList[p].insertAdjacentElement('beforebegin', input);
+}
+exports.insert = insert;
 
 
 /***/ }),
@@ -534,7 +583,7 @@ exports.isNamedFunction = (input) => {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sourceObject = exports.getComputedValue = exports.eventInput = exports.elementStringSource = void 0;
+exports.inputObject = exports.getComputedValue2 = exports.getComputedValue = exports.getTrueElement = exports.eventInput = exports.elementStringSource = void 0;
 const Check = __webpack_require__(/*! ./Check */ "./src/utils/Check.ts");
 function elementStringSource(source) {
     const Rrule = /^@(\w+):/;
@@ -557,16 +606,24 @@ function eventInput(eventInput) {
     return [type, target];
 }
 exports.eventInput = eventInput;
+function getTrueElement(input) {
+    return Check.isEBObject(input) ? input.element : input;
+}
+exports.getTrueElement = getTrueElement;
 function getComputedValue(value) {
     return Check.isFunction(value) ? value.call(this) : value;
 }
 exports.getComputedValue = getComputedValue;
-exports.sourceObject = (source) => {
+function getComputedValue2(value, boundData) {
+    return Check.isFunction(value) ? value.call(this, boundData) : value;
+}
+exports.getComputedValue2 = getComputedValue2;
+exports.inputObject = (source) => {
     // 'properties@once:click@interval:1000' => ['properties', 'once:click', 'interval:1000']
     const parseSourceKey = (sourceKey) => sourceKey.split('@');
     // 'once:click' => ['once', 'click']
     const parseRawRule = (rawRule) => rawRule.split(':');
-    const getProcessedEntriesFromSource = (source) => {
+    const parseEntries = (source) => {
         return Object.keys(source).map((sourceKey) => {
             // trueKey = 'properties', rawRules = ['once:click', 'interval:1000']
             const [trueKey, ...rawRules] = parseSourceKey(sourceKey);
@@ -593,7 +650,7 @@ exports.sourceObject = (source) => {
         return object;
     };
     // [{ key: 'attributes', value: {...}, rules: [] }, ...], 
-    const processedEntries = getProcessedEntriesFromSource(source);
+    const processedEntries = parseEntries(source);
     const finalObject = getObjectFromEntries(processedEntries);
     // const finalMap = createMapFromProcessedEntries(processedEntries)
     return finalObject;
@@ -612,17 +669,24 @@ exports.sourceObject = (source) => {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.process = exports.Children = exports.Listeners = exports.Styles = exports.Attributes = exports.Properties = exports.element = void 0;
+exports.insertAt = exports.process = exports.Children = exports.Listeners = exports.Style = exports.Attributes = exports.Properties = exports.element = void 0;
 const EBuilderError_1 = __webpack_require__(/*! ../modules/EBuilderError */ "./src/modules/EBuilderError.ts");
 const Check = __webpack_require__(/*! ./Check */ "./src/utils/Check.ts");
 const Parse = __webpack_require__(/*! ./Parse */ "./src/utils/Parse.ts");
 const Rule = __webpack_require__(/*! ../modules/Rule */ "./src/modules/Rule.ts");
+/**
+ * Determinate the source element to work on depending on the input:
+ * element => element
+ * 'div' or '@element:div' => div element
+ * '<div>hello</div> or '@html:<div>hello</div> => element built upon html
+ * '@select:div.mydiv' => document.querySelector('div.mydiv')
+ */
 function element(source) {
     const hasRule = (input) => input.charAt(0) === '@';
     const inputType = (input) => /^<.*>$/.test(input) ? 'html' : 'element';
-    const getElementFromHTML = (value) => {
+    const getElementFromHTML = (html) => {
         const template = document.createElement('template');
-        template.innerHTML = value;
+        template.innerHTML = html;
         return template.content.firstElementChild;
     };
     const ruleMap = {
@@ -630,8 +694,11 @@ function element(source) {
         'select': (value) => document.querySelector(value),
         'element': (value) => document.createElement(value)
     };
-    if (source instanceof Element)
+    if (Check.isElement(source))
         return source;
+    if (Check.isEBObject(source))
+        return source.element;
+    source = `${source}`;
     if (hasRule(source)) {
         const { rule, value } = Parse.elementStringSource(source);
         if (!value)
@@ -658,15 +725,15 @@ function Attributes(attributes = {}) {
     process.call(this, attributes, addAttribute);
 }
 exports.Attributes = Attributes;
-function Styles(styles = {}) {
+function Style(style = {}) {
     const setStyle = (name, value) => {
         if (this.element instanceof HTMLElement) {
             this.element.style[name] = value;
         }
     };
-    process.call(this, styles, setStyle);
+    process.call(this, style, setStyle);
 }
-exports.Styles = Styles;
+exports.Style = Style;
 function Listeners(listeners) {
     const addListener = ([event, listener, options]) => {
         this.element.addEventListener(event, listener, options);
@@ -674,7 +741,7 @@ function Listeners(listeners) {
     if (Check.isEventTuple(listeners))
         addListener(listeners);
     else if (Check.isEventTupleArray(listeners))
-        listeners.forEach(addListener);
+        (listeners).forEach(addListener);
     else
         new EBuilderError_1.default('Invalid input for listeners input ([string, Function] or [string, Function][] expected)', listeners);
 }
@@ -691,8 +758,8 @@ function Children(children) {
         else if (Check.isTypeOf(child, 'string', 'number')) {
             this.element.innerHTML += `${child}`;
         }
-        else if (child.isEBuilder) {
-            this.element.appendChild(child.element);
+        else if (Check.isEBObject(child)) {
+            this.element.appendChild((child).element);
         }
         else
             new EBuilderError_1.default(`Invalid input in children array`, child);
@@ -701,12 +768,12 @@ function Children(children) {
     Check.isValidChild(childrenValue)
         ? addChild(childrenValue)
         : Check.isTypeOf(childrenValue, 'array')
-            ? childrenValue.forEach(addChild)
+            ? (childrenValue).forEach(addChild)
             : new EBuilderError_1.default(`Invalid input for children value`, childrenValue);
 }
 exports.Children = Children;
 function process(source, callback, keyRestriction) {
-    const parsedObject = Parse.sourceObject(source);
+    const parsedObject = Parse.inputObject(source);
     const processEntry = (key) => {
         if (keyRestriction && !(key in keyRestriction))
             return;
@@ -716,6 +783,7 @@ function process(source, callback, keyRestriction) {
          * Possible entry point for calling additionnal parameters for, e.g., @-for rule
          */
         const computedValue = () => Parse.getComputedValue.call(this, value);
+        const computedValue2 = (boundData) => Parse.getComputedValue2.call(this, value, boundData);
         const setEntry = () => callback(key, computedValue());
         currentEntry.hasRules() ? submitToRules(rules, setEntry) : setEntry();
     };
@@ -735,6 +803,22 @@ function process(source, callback, keyRestriction) {
     Object.keys(parsedObject).forEach(processEntry);
 }
 exports.process = process;
+function insertAt(element, target, n) {
+    if (!Check.isNumber(n))
+        return;
+    const getPos = (n, length) => {
+        return n < 0
+            ? Math.max(length - 1 + n, 0)
+            : Math.min(length - 1, n);
+    };
+    const childList = target.children;
+    const p = getPos(n, childList.length);
+    if (childList.length === 0 || childList.length - 1 === p)
+        target.appendChild(element);
+    else
+        childList[p].insertAdjacentElement('beforebegin', element);
+}
+exports.insertAt = insertAt;
 
 
 /***/ })

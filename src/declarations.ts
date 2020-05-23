@@ -1,5 +1,6 @@
 type AnyObject = { [key: string]: any }
 type ObjectObject = { [key: string]: object }
+type NumberObject = { [key: string]: number }
 type StringObject = { [key: string]: string }
 type FunctionObject = { [key: string]: Function }
 type Vector = { [key: string]: number }
@@ -52,7 +53,7 @@ interface ProcessedEntry {
     rules: RuleMap
 }
 
-interface ProcessedObject {
+interface ParsedObject {
     [key: string]: {
         value: any,
         rules: RuleMap

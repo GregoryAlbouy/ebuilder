@@ -3,14 +3,21 @@ import * as Check from './Check'
 import * as Parse from './Parse'
 import * as Rule from '../modules/Rule'
 
-export function element(source: string | Element): Element {
+/**
+ * Determinate the source element to work on depending on the input:
+ * element => element
+ * 'div' or '@element:div' => div element
+ * '<div>hello</div> or '@html:<div>hello</div> => element built upon html
+ * '@select:div.mydiv' => document.querySelector('div.mydiv')
+ */
+export function element(source: string | Element | EBObject): Element {
     const hasRule = (input: string) => input.charAt(0) === '@'
 
     const inputType = (input: string) => /^<.*>$/.test(input) ? 'html' : 'element'
 
-    const getElementFromHTML = (value: string) => {
+    const getElementFromHTML = (html: string) => {
         const template = document.createElement('template')
-        template.innerHTML = value
+        template.innerHTML = html
         return template.content.firstElementChild
     }
 
@@ -20,7 +27,11 @@ export function element(source: string | Element): Element {
         'element': (value: any) => document.createElement(value)
     }
 
-    if (source instanceof Element) return source
+    if (Check.isElement(source)) return source
+
+    if (Check.isEBObject(source)) return source.element
+    
+    source = `${source}`
 
     if (hasRule(source)) {
         const { rule, value } = Parse.elementStringSource(source)
@@ -53,14 +64,14 @@ export function Attributes(this: EBObject, attributes: StringObject | Function =
     process.call(this, attributes, addAttribute)
 }
 
-export function Styles(this: EBObject, styles: StringObject | Function = {}): void {
+export function Style(this: EBObject, style: StringObject | Function = {}): void {
     const setStyle = (name: string, value: any) => {
         if (this.element instanceof HTMLElement) {
             (this.element.style as AnyObject)[name] = value
         }
     }
     
-    process.call(this, styles, setStyle)
+    process.call(this, style, setStyle)
 }
 
 export function Listeners(this: EBObject, listeners: EventTuple | EventTuple[] | Function): void {
@@ -68,8 +79,8 @@ export function Listeners(this: EBObject, listeners: EventTuple | EventTuple[] |
         this.element.addEventListener(event, listener, options)
     }
 
-    if (Check.isEventTuple(listeners)) addListener(listeners as EventTuple)
-    else if (Check.isEventTupleArray(listeners)) (listeners as EventTuple[]).forEach(addListener)
+    if (Check.isEventTuple(listeners)) addListener(listeners)
+    else if (Check.isEventTupleArray(listeners)) (listeners).forEach(addListener)
     else new EBuilderError('Invalid input for listeners input ([string, Function] or [string, Function][] expected)', listeners)
 }
 
@@ -85,16 +96,18 @@ export function Children(this: EBObject, children: EBChild | EBChild[] | Functio
         else if (Check.isTypeOf(child, 'string', 'number')) {
             this.element.innerHTML += `${child}`
         } 
-        else if ((child as EBObject).isEBuilder) {
-            this.element.appendChild((child as EBObject).element)
+        else if (Check.isEBObject(child)) {
+            this.element.appendChild((child).element)
         }
         else new EBuilderError(`Invalid input in children array`, child)
     }
+
     const childrenValue = Parse.getComputedValue.call(this, children)
+    
     Check.isValidChild(childrenValue)
-        ? addChild(childrenValue as EBChild)
+        ? addChild(childrenValue)
         : Check.isTypeOf(childrenValue, 'array')
-            ? (childrenValue as []).forEach(addChild)
+            ? (childrenValue).forEach(addChild)
             : new EBuilderError(`Invalid input for children value`, childrenValue)
 }
 
@@ -105,7 +118,7 @@ export function process(
     callback: SetterCallback,
     keyRestriction?: Object
 ) {
-    const parsedObject: ProcessedObject = Parse.sourceObject(source)
+    const parsedObject: ParsedObject = Parse.inputObject(source)
 
     const processEntry = (key: string) => {
         if (keyRestriction && !(key in keyRestriction)) return
@@ -117,6 +130,7 @@ export function process(
          * Possible entry point for calling additionnal parameters for, e.g., @-for rule
          */
         const computedValue = () => Parse.getComputedValue.call(this, value)
+        const computedValue2 = (boundData?: any[]) => Parse.getComputedValue2.call(this, value, boundData)
         const setEntry = () => callback(key, computedValue())
     
         currentEntry.hasRules() ? submitToRules(rules, setEntry) : setEntry()
@@ -139,4 +153,20 @@ export function process(
     }
 
     Object.keys(parsedObject).forEach(processEntry)
+}
+
+export function insertAt(element: Element, target: Element, n: number) {
+    if (!Check.isNumber(n)) return
+
+    const getPos = (n: number, length: number) => {
+        return n < 0
+            ? Math.max(length - 1 + n, 0)
+            : Math.min(length - 1, n)
+    }
+
+    const childList = target.children
+    const p = getPos(n, childList.length)
+
+    if (childList.length === 0 || childList.length - 1 === p) target.appendChild(element)
+    else childList[p].insertAdjacentElement('beforebegin', element)
 }

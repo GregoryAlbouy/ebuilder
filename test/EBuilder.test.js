@@ -136,7 +136,7 @@ const Test = {
     }
 }
 
-Test.constructor(false)
+// Test.constructor(false)
 // Test.constructor(true)
 
 // Test.setters(false)
@@ -220,3 +220,49 @@ Test.constructor(false)
 // })
 
 // EBuilder('button').setProperties({ onclick: () => () => clearInterval(elList.interval) }).into(document.body)
+
+// EBuilder('<button>click me</button>').setProperties({
+//     'textContent@on:click': () => Math.random() < .5 ? 'win!' : 'loose!',
+//     'innerHTML@on:mouseleave': 'Hey <strong>come back</strong>!'
+// }).into(document.body)
+
+// EBuilder('h2').textContent('Beware of the crazy button').set({
+//     style: {
+//         borderLeft: '4px solid #333',
+//         font: '2rem sans-serif'
+//     }
+// }).before(EBuilder('@select:button'))
+
+
+// const create = function(str) {
+//     const fragment = document.createDocumentFragment()
+//     const div = document.createElement('div')
+//     div.innerHTML = str
+//     while (div.firstChild) fragment.appendChild(div.firstChild)
+//     return fragment
+// }
+
+// const create2 = function(str) {
+//     const template = document.createElement('template')
+//     template.innerHTML = str
+//     return template.content
+// }
+
+// const c1 = create('yo<button><span>hello</span></button>')
+// const c2 = create2('yo<button><span>hello</span></button>')
+
+// console.log(create('yo<button><span>hello</span></button>'))
+// console.log(create2('yo<button><span>hello</span></button>'))
+
+// document.body.append(c1, c2)
+
+
+const p = EBuilder('p').setContent('Lopsum Irem').into(document.body, { times: 3 })
+
+const title = EBuilder('<h1>Hello <strong>World</strong>!</h1>').before(p)
+
+const button = EBuilder('button').set({
+    style: {
+        'background@interval:500': () => `hsl(360 * Math.random(), 50%, 50%`
+    }
+}).into(document.body)

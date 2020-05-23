@@ -26,18 +26,27 @@ export function eventInput(this: EBObject, eventInput: string) {
     return [type, target]
 }
 
+export function getTrueElement(input: Element | EBObject) {
+    return Check.isEBObject(input) ? input.element : input
+}
+
 export function getComputedValue(this: EBObject, value: any) {
     return Check.isFunction(value) ? value.call(this) : value
 }
 
-export const sourceObject = (source: AnyObject): ProcessedObject => {
+
+export function getComputedValue2(this: EBObject, value: any, boundData?: any[]) {
+    return Check.isFunction(value) ? value.call(this, boundData) : value
+}
+
+export const inputObject = (source: AnyObject): ParsedObject => {
     // 'properties@once:click@interval:1000' => ['properties', 'once:click', 'interval:1000']
     const parseSourceKey = (sourceKey: string) => sourceKey.split('@')
 
     // 'once:click' => ['once', 'click']
     const parseRawRule = (rawRule: string) => rawRule.split(':')
 
-    const getProcessedEntriesFromSource = (source: any): ProcessedEntry[] => {
+    const parseEntries = (source: any): ProcessedEntry[] => {
         return Object.keys(source).map((sourceKey: any) => {
             // trueKey = 'properties', rawRules = ['once:click', 'interval:1000']
             const [trueKey, ...rawRules] = parseSourceKey(sourceKey)
@@ -52,7 +61,7 @@ export const sourceObject = (source: AnyObject): ProcessedObject => {
         })
     }
 
-    const getObjectFromEntries = (processedEntries: ProcessedEntry[]): ProcessedObject  => {
+    const getObjectFromEntries = (processedEntries: ProcessedEntry[]): ParsedObject  => {
         const object = Object.create(null)
 
         processedEntries.forEach((entry) => {
@@ -70,8 +79,8 @@ export const sourceObject = (source: AnyObject): ProcessedObject => {
     }
 
     // [{ key: 'attributes', value: {...}, rules: [] }, ...], 
-    const processedEntries: ProcessedEntry[] = getProcessedEntriesFromSource(source)
-    const finalObject: ProcessedObject = getObjectFromEntries(processedEntries)
+    const processedEntries: ProcessedEntry[] = parseEntries(source)
+    const finalObject: ParsedObject = getObjectFromEntries(processedEntries)
     // const finalMap = createMapFromProcessedEntries(processedEntries)
 
     return finalObject

@@ -1,76 +1,79 @@
 /* Type checks */
 
-export const typeOf = (s: any): string => {
-    return `${{}.toString.call(s)}`
+export const typeOf = (input: any): string => {
+    return `${{}.toString.call(input)}`
         .replace(/^\[object ([a-z]+)\]$/i, '$1')
         .toLowerCase()
 }
 
-export const isTypeOf = (x: any, ...types: string[]): boolean => {
+export const isTypeOf = (input: any, ...types: string[]): boolean => {
     return types
-        .map((type) => typeOf(x) === type.toLocaleLowerCase())
+        .map((type) => typeOf(input) === type.toLocaleLowerCase())
         .reduce((a, c) => a || c)
 }
 
-export const isNumber = (subject: any): boolean => {
-    return isTypeOf(subject, 'number')
+export const isNumber = (input: any): input is number => {
+    return isTypeOf(input, 'number')
 }
 
-export const isFunction = (subject: any): boolean => {
-    return isTypeOf(subject, 'function')
+export const isString = (input: any): input is string => {
+    return isTypeOf(input, 'string')
 }
 
-export const isArray = (subject: any): boolean => {
-    return isTypeOf(subject, 'array')
+export const isFunction = (input: any): input is Function => {
+    return isTypeOf(input, 'function')
 }
 
-export const isArrayArray = (subject: any): boolean => {
+export const isArray = (input: any): input is [] => {
+    return isTypeOf(input, 'array')
+}
+
+export const isArrayArray = (input: any): input is [][] => {
     return (
-        isTypeOf(subject, 'array')
-        && subject.every((item: any) => isTypeOf(item, 'array'))
+        isTypeOf(input, 'array')
+        && input.every((item: any) => isTypeOf(item, 'array'))
     ) 
 }
 
-export const isStringObject = (subject: any): boolean => {
+export const isStringObject = (input: any): input is StringObject => {
     return (
-        isTypeOf(subject, 'object')
-        && Object.keys(subject).every((item: any) => isTypeOf(item, 'string'))
+        isTypeOf(input, 'object')
+        && Object.keys(input).every((item: any) => isTypeOf(item, 'string'))
     )
 }
 
-export const isEventTuple = (subject: any): boolean => {
+export const isEventTuple = (input: any): input is EventTuple => {
     return (
-        isTypeOf(subject, 'array')
-        && isTypeOf(subject[0], 'string')
-        && isTypeOf(subject[1], 'function')
-        && (!subject[2] || isTypeOf(subject[2], 'boolean', 'object'))
+        isTypeOf(input, 'array')
+        && isTypeOf(input[0], 'string')
+        && isTypeOf(input[1], 'function')
+        && (!input[2] || isTypeOf(input[2], 'boolean', 'object'))
     )
 }
 
-export const isEventTupleArray = (subject: any): boolean => {
+export const isEventTupleArray = (input: any): input is EventTuple[] => {
     return (
-        isTypeOf(subject, 'array')
-        && subject.every(isEventTuple)
+        isTypeOf(input, 'array')
+        && input.every(isEventTuple)
     )
 }
 
-export const isElement = (subject: any): boolean => {
-    return subject instanceof Element
+export const isElement = (input: any): input is Element => {
+    return input instanceof Element
 }
 
-export const isEBuilder = (subject: any): boolean => {
+export const isEBObject = (input: any): input is EBObject => {
     return (
-        subject instanceof Object
-        && 'isEBuilder' in subject && 'el' in subject
-        && subject.isEBuilder && subject.el
+        input instanceof Object
+        && (input as EBObject).isEBuilder
     )
 }
 
-export const isValidChild = (child: any): boolean => {
+export const isValidChild = (input: any): input is EBChild => {
     return (
-        isTypeOf(child, 'string', 'number')
-        || child instanceof Node
-        || (child as EBObject).isEBuilder
+        isTypeOf(input, 'string', 'number')
+        || input instanceof Node
+        || (input as EBObject).isEBuilder
     )
 }
 
@@ -89,7 +92,7 @@ export const isValidSwap = (element: Element, swapped: Element): boolean => {
 }
 
 export const isValidTarget = (target: any) => {
-    return isEBuilder(target) || target instanceof Element
+    return isEBObject(target) || target instanceof Element
 }
 
 export const hasName = (input: Function): boolean => {

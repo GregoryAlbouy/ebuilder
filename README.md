@@ -1,6 +1,18 @@
 # EBuilder : an HTML element builder
 
-Highly configurable and manipulable elements in a single declaration, with a functionnal touch.
+Build and manipulate elements the functionnal way, in a single statement.
+
+```javascript
+const p = EBuilder('p').setContent('Lopsum Irem').into(document.body, { times: 3 })
+
+const title = EBuilder('<h1>Hello <strong>World</strong>!</h1>').before(p)
+
+const button = EBuilder('button').set({
+    style: {
+        'background@interval:500': () => `hsl(360 * Math.random(), 50%, 50%`
+    }
+}).
+```
 
 **README in progress!**
 
@@ -11,7 +23,7 @@ Highly configurable and manipulable elements in a single declaration, with a fun
 * single declaration
 * this binding
 
-## Install
+## Installation
 
 ### Using npm
 
@@ -20,9 +32,6 @@ npm i ebuilder-js
 ```
 ```javascript
 import EBuilder from 'ebuilder-js'
-
-// test
-EBuilder('div').into(document.body)
 ```
 
 ### Using bundle
@@ -30,11 +39,12 @@ EBuilder('div').into(document.body)
 ```html
 <script src="./path/to/ebuilder.min.js">
 ```
-```javascript
-EBuilder('div').into(document.body)
-```
 
-## Features
+## Doc
+
+### EBuilder inputs
+
+* 
 
 ## Properties
 

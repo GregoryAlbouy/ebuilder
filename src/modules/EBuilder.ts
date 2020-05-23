@@ -1,6 +1,7 @@
 import EBuilderAnimation from './EBuilderAnimation'
 import EBuilderError from './EBuilderError'
 import * as Check from '../utils/Check'
+import * as DOM from '../utils/DOM'
 import * as Parse from '../utils/Parse'
 import * as Setter from '../utils/Setter'
 
@@ -17,7 +18,7 @@ const EBuilder = function(this: any, source: Element | string)
     return {
         el: element,
         element: element,
-        htmlContent: function() { return this.element.innerHTML },
+        getHTML: function() { return this.element.innerHTML },
         isEBuilder: true,
         referenceMap: referenceMap,
 
@@ -28,7 +29,7 @@ const EBuilder = function(this: any, source: Element | string)
         given: function(...references: ReferencePair[]) {
             const register = (ref: ReferencePair | Function) => {
                 if (Check.isArray(ref)) {
-                    const [target, id] = ref as ReferencePair
+                    const [target, id] = ref as unknown as ReferencePair // come back here later
                     this.referenceMap.set(id, target)
                 } else if (Check.isNamedFunction(ref)) {
                     this.referenceMap.set((ref as Function).name, ref)
@@ -39,11 +40,11 @@ const EBuilder = function(this: any, source: Element | string)
             return this
         },
 
-        into: function( targetInput: EBTarget, { at = -1, times = 1 }: IntoOptions = {}) {
+        into: function(targetInput: EBTarget, { at = -1, times = 1 }: IntoOptions = {}) {
             if (!Check.isValidTarget(targetInput)) return
 
             const getTarget = (target: EBTarget) => {
-                return Check.isEBuilder(target)
+                return Check.isEBObject(target)
                     ? (target as EBObject).element as Element
                     : target as Element
             } 
@@ -73,24 +74,30 @@ const EBuilder = function(this: any, source: Element | string)
             return this
         },
 
-        after: function(node: Element) {
-            node.insertAdjacentElement('afterend', element)
+        after: function(inputTarget: Element | EBObject) {
+            const target = Parse.getTrueElement(inputTarget)
+
+            target.insertAdjacentElement('afterend', element)
 
             this.element.dispatchEvent(new CustomEvent('ebuilderinsert'))
 
             return this
         },
 
-        before: function(node: Element) {
-            node.insertAdjacentElement('beforebegin', element)
+        before: function(inputTarget: Element | EBObject) {
+            const target = Parse.getTrueElement(inputTarget)
+
+            target.insertAdjacentElement('beforebegin', element)
 
             this.element.dispatchEvent(new CustomEvent('ebuilderinsert'))
 
             return this
         },
 
-        replace: function(node: Node) {
-            node.parentNode?.replaceChild(element, node)
+        replace: function(inputTarget: Element | EBObject) {
+            const target = Parse.getTrueElement(inputTarget)
+
+            target.parentNode?.replaceChild(element, target)
 
             this.element.dispatchEvent(new CustomEvent('ebuilderinsert'))
         
@@ -142,6 +149,7 @@ const EBuilder = function(this: any, source: Element | string)
                 attributes: Setter.Attributes,
                 listeners: Setter.Listeners,
                 children: Setter.Children,
+                style: Setter.Style
             }
 
             const setOption = (name: any, value: any) => {
@@ -181,9 +189,9 @@ const EBuilder = function(this: any, source: Element | string)
             return this
         },
 
-        setStyles: function(styles: StringObject | Function) {
-            const value = Parse.getComputedValue.call(this, styles)
-            Setter.Styles.call(this, value)
+        setStyle: function(style: StringObject | Function) {
+            // const value = Parse.getComputedValue.call(this, style)
+            Setter.Style.call(this, style)
 
             return this
         },
@@ -194,8 +202,8 @@ const EBuilder = function(this: any, source: Element | string)
             return this
         },
         
-        textContent: function(input: string) {
-            element.textContent = input
+        setContent: function(input: string | Element | EBObject | Function, at?: string | number) {
+            DOM.insert(input, element, at)
 
             return this
         },
