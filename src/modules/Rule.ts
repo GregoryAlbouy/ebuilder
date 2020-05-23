@@ -1,5 +1,7 @@
 import EBuilderError from './EBuilderError'
+import * as Check from '../utils/Check'
 import * as Parse from '../utils/Parse'
+import { isArray } from 'util'
 
 export const RuleMap: FunctionObject = {
     on: On,
@@ -83,5 +85,17 @@ export function For(
         // const realValue = entryValue.bind.call(this, v, i a)
         console.log(callback)
         callback()
+    } )
+}
+
+export function For2(
+    this: EBObject,
+    ref: any[],
+    callback: Function
+): void {
+    if (!Check.isArray(ref)) return callback.call(this), void
+
+    ref.forEach((v: any, i: number, a: any[]) => {
+        callback.call(this, v, i, a)
     } )
 }

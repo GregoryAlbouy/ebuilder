@@ -7,7 +7,7 @@ const outputPath = {
     production: './dist'
 }
 const outputFilename = {
-    development: `ebuilder-${VERSION}.js`,
+    development: `ebuilder.js`,
     production: `ebuilder-${VERSION}.min.js`
 }
 const devtool = {

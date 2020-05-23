@@ -40,7 +40,9 @@ interface EBObject {
     element: Element
     referenceMap: ReferenceMap
     interval?: number
+    cloneList: Element[]
     getRef: (query: string) => any
+    setElement: (value: Element) => void
 }
 
 

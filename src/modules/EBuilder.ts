@@ -14,6 +14,7 @@ const EBuilder = function(this: any, source: Element | string)
 
     const element: Element = Setter.element(source)
     const referenceMap: ReferenceMap = new Map([['window', window]])
+    const cloneList: Element[] = []
 
     return {
         el: element,
@@ -21,9 +22,10 @@ const EBuilder = function(this: any, source: Element | string)
         getHTML: function() { return this.element.innerHTML },
         isEBuilder: true,
         referenceMap: referenceMap,
+        cloneList: cloneList,
 
-        getRef: function(query: string): any {
-            return this.referenceMap.get(query) || (new EBuilderError('nul!', query), false)
+        getRef: function(query?: string): any {
+            return query ? this.referenceMap.get(query) : (new EBuilderError('nul!', query), false)
         },
 
         given: function(...references: ReferencePair[]) {
@@ -41,34 +43,17 @@ const EBuilder = function(this: any, source: Element | string)
         },
 
         into: function(targetInput: EBTarget, { at = -1, times = 1 }: IntoOptions = {}) {
-            if (!Check.isValidTarget(targetInput)) return
+            if (!Check.isValidTarget(targetInput) || !Check.isNumber(times)) return
 
+            // use Parse.getTrueElement() instead
             const getTarget = (target: EBTarget) => {
                 return Check.isEBObject(target)
                     ? (target as EBObject).element as Element
                     : target as Element
-            } 
-
-            const insertAt = (element: Element, target: Element, n: number) => {
-                if (!Check.isNumber(n)) return
-
-                const getPos = (n: number, length: number) => {
-                    return n < 0
-                        ? Math.max(length - 1 + n, 0)
-                        : Math.min(length - 1, n)
-                }
-
-                const childList = target.children
-                const p = getPos(n, childList.length)
-
-                if (childList.length === 0 || childList.length - 1 === p) target.appendChild(element)
-                else childList[p].insertAdjacentElement('beforebegin', element)
             }
-
-            const target = getTarget(targetInput)
-            const p = Math.floor(Number(at))
-            Number.isNaN(p) ? target.appendChild(element) : insertAt(element, target, p)
-
+            
+            DOM.insertV1.call(this, this.element, getTarget(targetInput), at, times)
+            
             this.element.dispatchEvent(new CustomEvent('ebuilderinsert'))
 
             return this
@@ -126,8 +111,17 @@ const EBuilder = function(this: any, source: Element | string)
             return this
         },
 
-        out: function() {
+        out: function(all?: boolean) {
             element.parentNode?.removeChild(element)
+            if (all) this.clearClones
+
+            return this
+        },
+
+        clearClones: function() {
+            this.cloneList.forEach((clone) => clone.parentNode?.removeChild(clone))
+
+            return this
         },
 
         dispatch: function(nameInput: string, emitterInput?: any) {
@@ -202,8 +196,10 @@ const EBuilder = function(this: any, source: Element | string)
             return this
         },
         
-        setContent: function(input: string | Element | EBObject | Function, at?: string | number) {
-            DOM.insert(input, element, at)
+        // + setContent(options = { add?, remove?,  })
+        setContent: function(input: string | Element | EBObject) {
+            this.element.innerHTML = `${input}`
+            // DOM.insert.call(this, input, element, at, 1)
 
             return this
         },
@@ -214,6 +210,11 @@ const EBuilder = function(this: any, source: Element | string)
 
         count: function() {
             return this.element.childNodes.length
+        },
+
+        setElement: function(value: Element) {
+            this.element = value
+            this.el = value
         }
     }
 }

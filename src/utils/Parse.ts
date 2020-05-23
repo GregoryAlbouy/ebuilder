@@ -15,7 +15,39 @@ export function elementStringSource (source: string) {
     }
 }
 
+export function HTMLToElement(html: string): Element | Node {
+    const template = document.createElement('template')
+    template.innerHTML = html
+    return template.content.firstChild! // needs checks
+}
+
+export function getFragmentFrom(input: string | Element | EBObject, times: number = 1) {
+    const template = document.createElement('template')
+    let safeTimes = Math.abs(Math.floor(times))
+
+    const fillTemplate = (input: string | Element | EBObject) => {
+        const html = Check.isElement(input) ? input.outerHTML : `${input}`
+        
+        template.innerHTML += html
+    }
+
+    while (safeTimes--) fillTemplate(input)
+
+    return template.content
+}
+
+export function getElementFrom(input: string | Element | EBObject): Element {
+    return (
+        Check.isString(input)
+            ? HTMLToElement(input) as Element // change this
+            : Check.isEBObject(input)
+                ? input.element
+                : input as Element // needs checks
+    )
+}
+
 export function eventInput(this: EBObject, eventInput: string) {
+    // replace with getTrueElement()
     const elementFrom = (getRefResult: any) => {
         return 'isEBuilder' in getRefResult ? getRefResult.element : getRefResult
     }

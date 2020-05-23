@@ -90,7 +90,15 @@ const Test = {
             const elList = EBuilder('ol').into(document.body)
                 .setChildren(() => [...Array(5)].map(() => '<li>child</li>'))
 
-            const stranger = EBuilder('li').textContent('stranger!').into(elList, { at: -5 })
+            const stranger = EBuilder('li')
+                .setContent('<b>stranger!</b>')
+                .into(elList, { at: 'start', times: 3 })
+                .setStyle({ color: 'red' })
+                .into(elList, { at: 'middle', times: 2 })
+                .setStyle({ color: 'green' })
+                .into(elList, { at: -1 })
+                .out(true)
+                .into()
 
         } else {
             console.log('-- ERRORS --')
@@ -142,7 +150,7 @@ const Test = {
 // Test.setters(false)
 // Test.setters(true)
 
-// Test.insertions(false)
+Test.insertions(false)
 // Test.insertions(true)
 
 // Test.rules(false)
@@ -257,12 +265,12 @@ const Test = {
 // document.body.append(c1, c2)
 
 
-const p = EBuilder('p').setContent('Lopsum Irem').into(document.body, { times: 3 })
+// const p = EBuilder('p').setContent('Lopsum Irem').into(document.body, { times: 3 })
 
-const title = EBuilder('<h1>Hello <strong>World</strong>!</h1>').before(p)
+// const title = EBuilder('<h1>Hello <strong>World</strong>!</h1>').before(p)
 
-const button = EBuilder('button').set({
-    style: {
-        'background@interval:500': () => `hsl(360 * Math.random(), 50%, 50%`
-    }
-}).into(document.body)
+// const button = EBuilder('button').set({
+//     style: {
+//         'background@interval:500': () => `hsl(360 * Math.random(), 50%, 50%`
+//     }
+// }).into(document.body)

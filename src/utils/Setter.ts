@@ -111,7 +111,6 @@ export function Children(this: EBObject, children: EBChild | EBChild[] | Functio
             : new EBuilderError(`Invalid input for children value`, childrenValue)
 }
 
-
 export function process(
     this: EBObject,
     source: AnyObject,
@@ -126,13 +125,9 @@ export function process(
         const currentEntry = parsedObject[key]
         const { value, rules } = currentEntry
 
-        /**
-         * Possible entry point for calling additionnal parameters for, e.g., @-for rule
-         */
         const computedValue = () => Parse.getComputedValue.call(this, value)
-        const computedValue2 = (boundData?: any[]) => Parse.getComputedValue2.call(this, value, boundData)
         const setEntry = () => callback(key, computedValue())
-    
+
         currentEntry.hasRules() ? submitToRules(rules, setEntry) : setEntry()
     }
 
@@ -155,18 +150,59 @@ export function process(
     Object.keys(parsedObject).forEach(processEntry)
 }
 
-export function insertAt(element: Element, target: Element, n: number) {
-    if (!Check.isNumber(n)) return
+export function process2(
+    this: EBObject,
+    source: AnyObject,
+    callback: SetterCallback,
+    keyRestriction?: Object
+) {
+    const parsedObject: ParsedObject = Parse.inputObject(source)
 
-    const getPos = (n: number, length: number) => {
-        return n < 0
-            ? Math.max(length - 1 + n, 0)
-            : Math.min(length - 1, n)
+    const processEntry = (key: string) => {
+        if (keyRestriction && !(key in keyRestriction)) return
+
+        const currentEntry = parsedObject[key]
+        const { value, rules } = currentEntry
+
+        if (rules.has('for')) {
+            if (Check.isFunction(value)) {
+                const ref = this.getRef(rules.get('for')!) // needs checks
+                Rule.For2.call(this, ref, value)
+            }
+        } else {
+            const computedValue = () => Parse.getComputedValue.call(this, value)
+            const setEntry = () => callback(key, computedValue())
+    
+            // const computedValue2 = (boundData?: any[]) => Parse.getComputedValue2.call(this, value, boundData)
+            // const setEntry2 = (boundData?: any[]) => callback(key, computedValue2(boundData))
+        
+            currentEntry.hasRules() ? submitToRules(rules, setEntry) : setEntry()
+        }
     }
 
-    const childList = target.children
-    const p = getPos(n, childList.length)
+    const submitToRules = (rules: RuleMap, callback: Function) => {
+        let ruleApplied = false
 
-    if (childList.length === 0 || childList.length - 1 === p) target.appendChild(element)
-    else childList[p].insertAdjacentElement('beforebegin', element)
+        const applyRule = (ruleValue: any, ruleName: string) => {
+            const ruleKey = ruleName.toLowerCase()
+            if (ruleKey in Rule.RuleMap) {
+                Rule.RuleMap[ruleKey].call(this, ruleValue, callback)
+                ruleApplied = true
+            }
+        }
+        
+        const applyRule2 = (ruleValue: any, ruleName: string) => {
+            const ruleKey = ruleName.toLowerCase()
+            if (ruleKey in Rule.RuleMap) {
+                Rule.RuleMap[ruleKey].call(this, ruleValue, callback)
+                ruleApplied = true
+            }
+        }
+    
+        rules.forEach(applyRule)
+    
+        if (!ruleApplied) callback()
+    }
+
+    Object.keys(parsedObject).forEach(processEntry)
 }

@@ -124,14 +124,16 @@ const EBuilder = function (source) {
     }
     const element = Setter.element(source);
     const referenceMap = new Map([['window', window]]);
+    const cloneList = [];
     return {
         el: element,
         element: element,
         getHTML: function () { return this.element.innerHTML; },
         isEBuilder: true,
         referenceMap: referenceMap,
+        cloneList: cloneList,
         getRef: function (query) {
-            return this.referenceMap.get(query) || (new EBuilderError_1.default('nul!', query), false);
+            return query ? this.referenceMap.get(query) : (new EBuilderError_1.default('nul!', query), false);
         },
         given: function (...references) {
             const register = (ref) => {
@@ -149,31 +151,15 @@ const EBuilder = function (source) {
             return this;
         },
         into: function (targetInput, { at = -1, times = 1 } = {}) {
-            if (!Check.isValidTarget(targetInput))
+            if (!Check.isValidTarget(targetInput) || !Check.isNumber(times))
                 return;
+            // use Parse.getTrueElement() instead
             const getTarget = (target) => {
                 return Check.isEBObject(target)
                     ? target.element
                     : target;
             };
-            const insertAt = (element, target, n) => {
-                if (!Check.isNumber(n))
-                    return;
-                const getPos = (n, length) => {
-                    return n < 0
-                        ? Math.max(length - 1 + n, 0)
-                        : Math.min(length - 1, n);
-                };
-                const childList = target.children;
-                const p = getPos(n, childList.length);
-                if (childList.length === 0 || childList.length - 1 === p)
-                    target.appendChild(element);
-                else
-                    childList[p].insertAdjacentElement('beforebegin', element);
-            };
-            const target = getTarget(targetInput);
-            const p = Math.floor(Number(at));
-            Number.isNaN(p) ? target.appendChild(element) : insertAt(element, target, p);
+            DOM.insertV1.call(this, this.element, getTarget(targetInput), at, times);
             this.element.dispatchEvent(new CustomEvent('ebuilderinsert'));
             return this;
         },
@@ -211,9 +197,16 @@ const EBuilder = function (source) {
             dummy.parentNode.replaceChild(swapped, dummy);
             return this;
         },
-        out: function () {
+        out: function (all) {
             var _a;
             (_a = element.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(element);
+            if (all)
+                this.clearClones;
+            return this;
+        },
+        clearClones: function () {
+            this.cloneList.forEach((clone) => { var _a; return (_a = clone.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(clone); });
+            return this;
         },
         dispatch: function (nameInput, emitterInput) {
             const emitter = !emitterInput
@@ -267,8 +260,10 @@ const EBuilder = function (source) {
             element.classList.add(...[].concat(...classes));
             return this;
         },
-        setContent: function (input, at) {
-            DOM.insert(input, element, at);
+        // + setContent(options = { add?, remove?,  })
+        setContent: function (input) {
+            this.element.innerHTML = `${input}`;
+            // DOM.insert.call(this, input, element, at, 1)
             return this;
         },
         toString: function () {
@@ -276,6 +271,10 @@ const EBuilder = function (source) {
         },
         count: function () {
             return this.element.childNodes.length;
+        },
+        setElement: function (value) {
+            this.element = value;
+            this.el = value;
         }
     };
 };
@@ -385,8 +384,9 @@ exports.default = EBuilderError;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.For = exports.If = exports.Timeout = exports.Interval = exports.Once = exports.On = exports.RuleMap = void 0;
+exports.For2 = exports.For = exports.If = exports.Timeout = exports.Interval = exports.Once = exports.On = exports.RuleMap = void 0;
 const EBuilderError_1 = __webpack_require__(/*! ./EBuilderError */ "./src/modules/EBuilderError.ts");
+const Check = __webpack_require__(/*! ../utils/Check */ "./src/utils/Check.ts");
 const Parse = __webpack_require__(/*! ../utils/Parse */ "./src/utils/Parse.ts");
 exports.RuleMap = {
     on: On,
@@ -442,6 +442,13 @@ function For(conditionId, callback) {
     });
 }
 exports.For = For;
+function For2(ref, callback) {
+    if (!Check.isArray(ref))
+        return callback.call(this), void ref.forEach((v, i, a) => {
+            callback.call(this, v, i, a);
+        });
+}
+exports.For2 = For2;
 
 
 /***/ }),
@@ -541,34 +548,88 @@ exports.isNamedFunction = (input) => {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.insert = void 0;
+exports.insertV1 = exports.insert = void 0;
 const Check = __webpack_require__(/*! ./Check */ "./src/utils/Check.ts");
+const Parse = __webpack_require__(/*! ./Parse */ "./src/utils/Parse.ts");
 /**
  * In progress
  */
-function insert(input, target, at) {
+function insert(input, target, at, times) {
     const posFromString = (at, childList) => {
         const posMap = {
             start: 0,
             middle: Math.floor(childList.length / 2),
-            end: childList.length - 1
+            end: childList.length
         };
         return at in posMap ? posMap[at] : posMap.end;
     };
     const safePos = (n, length) => {
         return n < 0
-            ? Math.max(length - 1 + n, 0)
-            : Math.min(length - 1, n);
+            ? Math.max(length + (n + 1), 0)
+            : Math.min(length, n);
     };
+    const safeTimes = times ? Math.abs(Math.floor(times)) : 1;
+    const computedInput = Parse.getComputedValue.call(this, input);
+    const fragment = Parse.getFragmentFrom(computedInput, safeTimes);
     const childList = target.children;
     const n = Check.isString(at) ? posFromString(at, childList) : Math.floor(at);
     const p = safePos(n, childList.length);
-    if (childList.length === 0 || childList.length - 1 === p)
-        target.appendChild(input);
-    else
-        childList[p].insertAdjacentElement('beforebegin', input);
+    // console.log(
+    //     `input: ${input}\n`,
+    //     `computedInput: ${computedInput}\n`,
+    //     `targetLength: ${childList.length}\n`,
+    //     `at: ${at}\n`,
+    //     `position: ${n}\n`,
+    //     `safePosition: ${p}\n`,
+    //     `times: ${times}\n`,
+    //     `fragment:`, fragment
+    // )
+    // console.log(fragment.firstElementChild)
+    this.setElement(fragment.firstElementChild); // needs checks
+    if (childList.length === 0 || childList.length === p) {
+        // console.log('cas 1')
+        target.appendChild(fragment);
+    }
+    else {
+        // console.log(childList[p], p)
+        target.insertBefore(fragment, childList[p]);
+    }
+    // console.log(input)
+    // console.log(fragment.firstChild)
 }
 exports.insert = insert;
+function insertV1(input, target, at, times) {
+    const posFromString = (at, childList) => {
+        const posMap = {
+            start: 0,
+            middle: Math.floor(childList.length / 2),
+            end: childList.length
+        };
+        return at in posMap ? posMap[at] : posMap.end;
+    };
+    const safePos = (n, length) => {
+        return n < 0
+            ? Math.max(length + (n + 1), 0)
+            : Math.min(length, n);
+    };
+    let safeTimes = times ? Math.abs(Math.floor(times)) : 1;
+    const clones = [...Array(safeTimes - 1)].map(() => input.cloneNode(true));
+    const childList = target.children;
+    const n = Check.isString(at) ? posFromString(at, childList) : Math.floor(at);
+    const p = safePos(n, childList.length);
+    this.cloneList.push(...clones);
+    // needs refacto
+    if (childList.length === 0 || childList.length === p) {
+        target.appendChild(input);
+        clones.forEach((clone) => target.appendChild(clone));
+    }
+    else {
+        const childRef = childList[p];
+        target.insertBefore(input, childRef);
+        clones.forEach((clone) => target.insertBefore(clone, childRef));
+    }
+}
+exports.insertV1 = insertV1;
 
 
 /***/ }),
@@ -583,7 +644,7 @@ exports.insert = insert;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.inputObject = exports.getComputedValue2 = exports.getComputedValue = exports.getTrueElement = exports.eventInput = exports.elementStringSource = void 0;
+exports.inputObject = exports.getComputedValue2 = exports.getComputedValue = exports.getTrueElement = exports.eventInput = exports.getElementFrom = exports.getFragmentFrom = exports.HTMLToElement = exports.elementStringSource = void 0;
 const Check = __webpack_require__(/*! ./Check */ "./src/utils/Check.ts");
 function elementStringSource(source) {
     const Rrule = /^@(\w+):/;
@@ -597,7 +658,35 @@ function elementStringSource(source) {
     };
 }
 exports.elementStringSource = elementStringSource;
+function HTMLToElement(html) {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    return template.content.firstChild; // needs checks
+}
+exports.HTMLToElement = HTMLToElement;
+function getFragmentFrom(input, times = 1) {
+    const template = document.createElement('template');
+    let safeTimes = Math.abs(Math.floor(times));
+    const fillTemplate = (input) => {
+        const html = Check.isElement(input) ? input.outerHTML : `${input}`;
+        template.innerHTML += html;
+    };
+    while (safeTimes--)
+        fillTemplate(input);
+    return template.content;
+}
+exports.getFragmentFrom = getFragmentFrom;
+function getElementFrom(input) {
+    return (Check.isString(input)
+        ? HTMLToElement(input) // change this
+        : Check.isEBObject(input)
+            ? input.element
+            : input // needs checks
+    );
+}
+exports.getElementFrom = getElementFrom;
 function eventInput(eventInput) {
+    // replace with getTrueElement()
     const elementFrom = (getRefResult) => {
         return 'isEBuilder' in getRefResult ? getRefResult.element : getRefResult;
     };
@@ -669,7 +758,7 @@ exports.inputObject = (source) => {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.insertAt = exports.process = exports.Children = exports.Listeners = exports.Style = exports.Attributes = exports.Properties = exports.element = void 0;
+exports.process2 = exports.process = exports.Children = exports.Listeners = exports.Style = exports.Attributes = exports.Properties = exports.element = void 0;
 const EBuilderError_1 = __webpack_require__(/*! ../modules/EBuilderError */ "./src/modules/EBuilderError.ts");
 const Check = __webpack_require__(/*! ./Check */ "./src/utils/Check.ts");
 const Parse = __webpack_require__(/*! ./Parse */ "./src/utils/Parse.ts");
@@ -779,11 +868,7 @@ function process(source, callback, keyRestriction) {
             return;
         const currentEntry = parsedObject[key];
         const { value, rules } = currentEntry;
-        /**
-         * Possible entry point for calling additionnal parameters for, e.g., @-for rule
-         */
         const computedValue = () => Parse.getComputedValue.call(this, value);
-        const computedValue2 = (boundData) => Parse.getComputedValue2.call(this, value, boundData);
         const setEntry = () => callback(key, computedValue());
         currentEntry.hasRules() ? submitToRules(rules, setEntry) : setEntry();
     };
@@ -803,25 +888,53 @@ function process(source, callback, keyRestriction) {
     Object.keys(parsedObject).forEach(processEntry);
 }
 exports.process = process;
-function insertAt(element, target, n) {
-    if (!Check.isNumber(n))
-        return;
-    const getPos = (n, length) => {
-        return n < 0
-            ? Math.max(length - 1 + n, 0)
-            : Math.min(length - 1, n);
+function process2(source, callback, keyRestriction) {
+    const parsedObject = Parse.inputObject(source);
+    const processEntry = (key) => {
+        if (keyRestriction && !(key in keyRestriction))
+            return;
+        const currentEntry = parsedObject[key];
+        const { value, rules } = currentEntry;
+        if (rules.has('for')) {
+            if (Check.isFunction(value)) {
+                const ref = this.getRef(rules.get('for')); // needs checks
+                Rule.For2.call(this, ref, value);
+            }
+        }
+        else {
+            const computedValue = () => Parse.getComputedValue.call(this, value);
+            const setEntry = () => callback(key, computedValue());
+            // const computedValue2 = (boundData?: any[]) => Parse.getComputedValue2.call(this, value, boundData)
+            // const setEntry2 = (boundData?: any[]) => callback(key, computedValue2(boundData))
+            currentEntry.hasRules() ? submitToRules(rules, setEntry) : setEntry();
+        }
     };
-    const childList = target.children;
-    const p = getPos(n, childList.length);
-    if (childList.length === 0 || childList.length - 1 === p)
-        target.appendChild(element);
-    else
-        childList[p].insertAdjacentElement('beforebegin', element);
+    const submitToRules = (rules, callback) => {
+        let ruleApplied = false;
+        const applyRule = (ruleValue, ruleName) => {
+            const ruleKey = ruleName.toLowerCase();
+            if (ruleKey in Rule.RuleMap) {
+                Rule.RuleMap[ruleKey].call(this, ruleValue, callback);
+                ruleApplied = true;
+            }
+        };
+        const applyRule2 = (ruleValue, ruleName) => {
+            const ruleKey = ruleName.toLowerCase();
+            if (ruleKey in Rule.RuleMap) {
+                Rule.RuleMap[ruleKey].call(this, ruleValue, callback);
+                ruleApplied = true;
+            }
+        };
+        rules.forEach(applyRule);
+        if (!ruleApplied)
+            callback();
+    };
+    Object.keys(parsedObject).forEach(processEntry);
 }
-exports.insertAt = insertAt;
+exports.process2 = process2;
 
 
 /***/ })
 
 /******/ });
-//# sourceMappingURL=ebuilder-0.0.1.js.map
+//# sourceMappingURL=ebuilder.js.map
