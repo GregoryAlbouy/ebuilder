@@ -1,6 +1,6 @@
 const path = require('path')
 
-const VERSION = '0.0.1'
+const VERSION = '0.0.7'
 const mode = process.env.NODE_ENV
 const outputPath = {
     development: './test',
