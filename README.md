@@ -120,7 +120,7 @@ someElement.innerHTML += button
 
 #### dispatch(`string`)
 Emits an event from the current element with the input string as a name.
-See [event-name example](:event-name) for a practical use.
+See [event-name example](#:event-name) for a practical use.
 
 #### given(`ReferencePair` | `ReferencePair[]`)
 ReferencePair: [ `anyReference`, `unique-string-id` ]
