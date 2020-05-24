@@ -1,27 +1,16 @@
 # EBuilder : an HTML element builder
 
-Build and manipulate elements the functionnal way, in a single statement.
+Build and manipulate elements the intuitive way, in a single statement with a touch a functionnal programming.
 
 ```javascript
-const p = EBuilder('p').setContent('Lopsum Irem').into(document.body, { times: 3 })
-
-const title = EBuilder('<h1>Hello <strong>World</strong>!</h1>').before(p)
-
-const button = EBuilder('button').set({
-    style: {
-        'background@interval:500': () => `hsl(360 * Math.random(), 50%, 50%`
-    }
-}).
+const p = EBuilder('p').setContent('Lopsum Irem').into(document.body)
 ```
-
-**README in progress!**
-
-## Overview / Main features
-
-* freedom of input
-* chainability, functionnal aspect
-* single declaration
-* this binding
+```javascript
+EBuilder('<button>click me</button>').setProperties({
+    'textContent@on:click': () => Math.random() < .5 ? 'win!' : 'loose!',
+    'innerHTML@on:mouseleave': 'Hey <strong>come back</strong>!'
+}).into(document.body)
+```
 
 ## Installation
 
@@ -42,98 +31,160 @@ import EBuilder from 'ebuilder-js'
 
 ## Doc
 
-### EBuilder inputs
+### EBuilder input
 
-* 
+```typescript
+EBuilder(input: string | Element | EBObject)
+```
+| Argument type | Example |
+|---------------|---------|
+| string        | EBuilder(`'p'`) |
+| html string   | EBuilder(`'<p>Hello <span class="italic">World</span></p>!'`) |
+| @rule string  |  EBuilder(`'@select:p.paragraph:nth-child(1)'`) |
+| Element       | Ebuilder(`document.querySelector('p')`) |
+| EBObject      |  EBuilder(`EBuilder('p')`) |
 
-## Properties
-
-* `el`, `element`: the generated HTML element.
 
 ## Methods
 
+### DOM methods
+
+#### into(`target`, `options`?)
+* `target`: a Node or EBObject
+* `options`: { `at`?, `times`? }
+    * `at`: the position in the parent. Accepts a number (`0` is first, `-1` is last, floats are rounded), or `'start'` or `'middle'` or `'end'`. Default value: `-1`
+    * `times`: number of copies. Default value: `1`
+
+Example:
+```javascript
+const list = EBuilder('ul')
+    .setChildren([ '<li>First</li>', '<li>Last</li>' ])
+    .into(document.body)
+
+EBuilder('<li>HERE WE ARE</li>').into(list, { at: 'middle', times: 3 })
+
+/*
+- First
+- HERE WE ARE
+- HERE WE ARE
+- HERE WE ARE
+- Last
+*/
+```
+#### before(`target`)
+Places the element right before the target
+#### after(`target`)
+Places the element right after the target
+#### replace(`target`)
+Places the element at the target's position and removes the target
+#### swap(`target`, `animate?`)
+If both the element and the target are in the DOM, makes them swap.
+If `animate` is `true`, shows the animation.
+#### out()
+Removes the element from the DOM
+
+
 ### Setter methods
 
-#### setAttributes()
-#### setProperties()
-#### setListeners()
-#### setChildren()
-#### setClasses()
-#### setStyles()
 #### set()
-
-### Miscellaneous
-
-* `htmlContent()`: returns the current element's *innerHTML*
-* `count()`: returns the current element's amount of child nodes (might change to child **element** nodes instead)
-* `toString()`: returns the current element's *outerHTML*. It can be handy to add it to the DOM quite quickly
-```javascript
-const elButton = EBuilder('button').set({ ... })
-
-someElement.innerHTML += elButton
-```
 
 Signature: 
 ```typescript
-EBuilder(myElement).set({}: {
+EBuilder(x).set({}: {
     attributes?: { [attributeName: string]: string },
     properties?: { [propertyName: string]: any },
-    listeners?: EventTuple | EventTuple[]
-    children?:  ValidChild | ValidChild[],
+    style?: { [styleName: string]: string },
+    listeners?: EventTuple | EventTuple[],
+    children?:  EBChild | EBChild[],
 })
 ```
+with
+* EventTuple: arguments of addEventListener method in an array: `[ eventName: string, callback: Function, options ]`
+* EBChild: html string, Element, EBObject
 
-### DOM methods
+Note that any value can be replaced with a function returning that value, see [Function as value](#function-as-value)
 
-* into()
-* before()
-* after()
-* replace()
-* swap()
+#### setAttributes(`object`)
+#### setProperties(`object`)
+#### setListeners(`array`)
+#### setChildren(`string` | `Element` | `EBObject` | `array`)
+#### setClasses(`string` | `array`)
+#### setStyle(`object`)
+#### setContent(`string | EBObject`)
 
-### Function as value
+
+### Miscellaneous
+
+#### toString()
+Returns the current element's *outerHTML*, allowing a convenient access to that value:
+
+```javascript
+const button = EBuilder('button').set({ ... })
+
+someElement.innerHTML += button
+```
+
+#### dispatch(`string`)
+Emits and event with the input string name from the element.
+See [event-name example](#`:event-name`) for a practical use.
+
+#### given(`ReferencePair` | `ReferencePair[]`)
+ReferencePair: [ `anyReference`, `unique-string-id` ]
+Registers any reference in the EBuilder object, allowing to be accessed with an `@at-rule` followed by `unique-string-id`.  
+Note that if the `anyReference` is a **named function**, the string id can be omitted and the function name will be used as an id in this cas
+
+See [event-emitter example](#`:event-emitter`) or [@if example] for a practical uses.
+
+
+## Properties
+
+* `el` or `element`: the generated HTML element.
+* `htmlContent`: element's innerHTML
+* `count`: number of children
+* `children`: node list of children
+* ... and more to come!
+
+## Function as value
 
 Any value can be replaced with a function to be executed in the process (provided that function returns an appropriate value). This can be useful in many situations:
-* Non-static value
+* Dynamic rendering
 * Conditional value
-* Since value functions are called with the current EBuilder object as `this`, it allows auto-reference
-This can be useful when you want to render a non-static result. Consider the following:
-```javascript
-EBuilder(myElement).setProperties({
-    'innerHTML@on:click': myElement.el.htmlContent() + `<p>I have ${myElement.el.count()} children.</p>`
-})
-```
-This won't work as expected as the `length` value is calculated once and will always output the value at the moment of declaration.
-Instead, use the following:
+* Self-reference with `this` or bound argument
+
+### Dynamic rendering
 
 ```javascript
-EBuilder(myElement).setProperties({
-    'innerHTML@on:click': () => myElement.el.htmlContent() + `<p>I have ${myElement.el.count()} children.</p>`
-})
+// value is fixed
+EBuilder('p').setProperties({ 'textContent@interval:500': Math.random() })
+
+// value is dynamic
+EBuilder('p').setProperties({ 'textContent@interval:500': () => Math.random() })
 ```
 
-Note that function expressions are called with `this` value as the current EBuilder instance, so you can do instead :
+### Conditionnal value
+
+### Self-reference
+
+Function expressions are bound to the current EBuilder object through `this` argument, so you can get its reference within the same statement:
 
 ```javascript
-EBuilder(myElement).setProperties({
-    'innerHTML@on:click': function() { return this.htmlContent() + `<p>I have ${this.count()} children.</p>` }
+EBuilder('<ul><li>0</li></ul>').setProperties({
+    'innerHTML@on:click': function() { return this.htmlContent + `<li>${this.count}</li>` }
+})
+
+// also available as the first parameter:
+
+EBuilder('<ul><li>0</li></ul>').setProperties({
+    'innerHTML@on:click': (self) => self.htmlContent + `<li>${self.count}</li>`
 })
 ```
-
-#### children
-
-Expects an array of / a single value of :
-* HTML string (ex.)
-* EBuilder instance (ex.)
-* An Element (ex)
-* ...?
 
 ## @-rules
 
 Added at the end of a key string, @-rules allow conditionnal evaluation of the corresponding value in an object. Such rules are available in every object argument of a setting method (.setStyles(), .setChildren()...), including the set() method at both levels:
 
 ```javascript
-const elButton = EBuilder('button').set({
+EBuilder('button').set({
     'properties@on:mouseover': {
         'textContent@interval:1000': () => new Date().getSeconds()
     }
@@ -149,9 +200,17 @@ The corresponding value will be set when an `:eventName` event is emitted by the
 this.addEventListener('eventName', () => element.key = 'value')
 ```
 
-With `@on` the value will be updated each time the event occurs, and only the first time with `@once`
+This allows to do funny things quite straight-forwardly:
+```javascript
+EBuilder('<button>click me</button>').setProperties({
+    'textContent@on:click': () => Math.random() < .5 ? 'win!' : 'loose!',
+    'innerHTML@on:mouseleave': 'Hey <strong>come back</strong>!'
+}).into(document.body)
+```
 
-#### `:eventName`
+With `@on` the value will be updated each time the event occurs, but only the first time with `@once`
+
+#### `:event-name`
 
 The event name can be any string value:
 * A built-in event: `click`, `keydown`...
@@ -186,7 +245,7 @@ EBuilder('p')
     .setProperties({ 'textContent@once:click#buttonRef': 'Hello!' })
     .into(document.body)
 ```
-(More details about `given()` below)
+(More details about `given()` above)
 
 The `window` object is an exception to this rule, as it doesn't need to be pre-indexed.
 
@@ -205,16 +264,24 @@ EBuilder('div').into(document.body).setStyles({
 })
 ```
 
+Note: the interval function is referenced as the `.interval` property, which means you can clear it using `clearInterval(myEBuilderObject.interval)`.
+
 ### `@if`
 
-`'key@if:functionReference: 'value'`
+`'key@if:functionReference: 'value'`  
 The corresponding value is assigned if the specified `:functionReference` function returns `true`.
-See `given()` for more info about references.
+See [given() method](#given()) for more details about references.
+
+```javascript
+EBuilder('<button>click me</button>')
+    .given(isLucky)
+    .set({
+        'properties@on:click': { 'textContent@if:isLucky': 'Bravo!' }
+})
+```
 
 ### `@for`
 
--- EXPERIMENTAL --
+-- NOT YET AVAILABLE --
 
-`'key@for:arrayReference: 'value'`
-The corresponding value is assigned a number of times equal to the length of `:arrayReference`
-See `given()` for more info about references.
+`'key@for:arrayReference: 'value'`  
