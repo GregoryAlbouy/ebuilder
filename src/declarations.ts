@@ -35,14 +35,16 @@ interface IntoOptions {
 
 interface EBObject {
     isEBuilder: boolean
-    html?: string
-    el: Element
-    element: Element
+    readonly htmlContent: string
+    readonly el: Element
+    readonly element: Element
+    readonly children: NodeListOf<ChildNode>
+    readonly count: number
     referenceMap: ReferenceMap
     interval?: number
     cloneList: Element[]
     getRef: (query: string) => any
-    setElement: (value: Element) => void
+    // setElement: (value: Element) => void
 }
 
 

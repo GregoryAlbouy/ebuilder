@@ -21,20 +21,20 @@ export function HTMLToElement(html: string): Element | Node {
     return template.content.firstChild! // needs checks
 }
 
-export function getFragmentFrom(input: string | Element | EBObject, times: number = 1) {
-    const template = document.createElement('template')
-    let safeTimes = Math.abs(Math.floor(times))
+// export function getFragmentFrom(input: string | Element | EBObject, times: number = 1) {
+//     const template = document.createElement('template')
+//     let safeTimes = Math.abs(Math.floor(times))
 
-    const fillTemplate = (input: string | Element | EBObject) => {
-        const html = Check.isElement(input) ? input.outerHTML : `${input}`
+//     const fillTemplate = (input: string | Element | EBObject) => {
+//         const html = Check.isElement(input) ? input.outerHTML : `${input}`
         
-        template.innerHTML += html
-    }
+//         template.innerHTML += html
+//     }
 
-    while (safeTimes--) fillTemplate(input)
+//     while (safeTimes--) fillTemplate(input)
 
-    return template.content
-}
+//     return template.content
+// }
 
 export function getElementFrom(input: string | Element | EBObject): Element {
     return (
@@ -63,7 +63,7 @@ export function getTrueElement(input: Element | EBObject) {
 }
 
 export function getComputedValue(this: EBObject, value: any) {
-    return Check.isFunction(value) ? value.call(this) : value
+    return Check.isFunction(value) ? value.call(this, this) : value
 }
 
 

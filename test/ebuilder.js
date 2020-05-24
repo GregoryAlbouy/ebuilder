@@ -126,9 +126,11 @@ const EBuilder = function (source) {
     const referenceMap = new Map([['window', window]]);
     const cloneList = [];
     return {
-        el: element,
-        element: element,
-        getHTML: function () { return this.element.innerHTML; },
+        get el() { return element; },
+        get element() { return element; },
+        get htmlContent() { return this.element.innerHTML; },
+        get count() { return this.element.childNodes.length; },
+        get children() { return this.element.childNodes; },
         isEBuilder: true,
         referenceMap: referenceMap,
         cloneList: cloneList,
@@ -262,20 +264,14 @@ const EBuilder = function (source) {
         },
         // + setContent(options = { add?, remove?,  })
         setContent: function (input) {
-            this.element.innerHTML = `${input}`;
+            const value = Parse.getComputedValue.call(this, input);
+            this.element.innerHTML = `${value}`;
             // DOM.insert.call(this, input, element, at, 1)
             return this;
         },
         toString: function () {
             return element.outerHTML;
         },
-        count: function () {
-            return this.element.childNodes.length;
-        },
-        setElement: function (value) {
-            this.element = value;
-            this.el = value;
-        }
     };
 };
 exports.default = EBuilder;
@@ -472,7 +468,7 @@ exports.typeOf = (input) => {
 };
 exports.isTypeOf = (input, ...types) => {
     return types
-        .map((type) => exports.typeOf(input) === type.toLocaleLowerCase())
+        .map((type) => exports.typeOf(input) === type.toLowerCase())
         .reduce((a, c) => a || c);
 };
 exports.isNumber = (input) => {
@@ -548,56 +544,55 @@ exports.isNamedFunction = (input) => {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.insertV1 = exports.insert = void 0;
+exports.insertV1 = void 0;
 const Check = __webpack_require__(/*! ./Check */ "./src/utils/Check.ts");
-const Parse = __webpack_require__(/*! ./Parse */ "./src/utils/Parse.ts");
 /**
  * In progress
  */
-function insert(input, target, at, times) {
-    const posFromString = (at, childList) => {
-        const posMap = {
-            start: 0,
-            middle: Math.floor(childList.length / 2),
-            end: childList.length
-        };
-        return at in posMap ? posMap[at] : posMap.end;
-    };
-    const safePos = (n, length) => {
-        return n < 0
-            ? Math.max(length + (n + 1), 0)
-            : Math.min(length, n);
-    };
-    const safeTimes = times ? Math.abs(Math.floor(times)) : 1;
-    const computedInput = Parse.getComputedValue.call(this, input);
-    const fragment = Parse.getFragmentFrom(computedInput, safeTimes);
-    const childList = target.children;
-    const n = Check.isString(at) ? posFromString(at, childList) : Math.floor(at);
-    const p = safePos(n, childList.length);
-    // console.log(
-    //     `input: ${input}\n`,
-    //     `computedInput: ${computedInput}\n`,
-    //     `targetLength: ${childList.length}\n`,
-    //     `at: ${at}\n`,
-    //     `position: ${n}\n`,
-    //     `safePosition: ${p}\n`,
-    //     `times: ${times}\n`,
-    //     `fragment:`, fragment
-    // )
-    // console.log(fragment.firstElementChild)
-    this.setElement(fragment.firstElementChild); // needs checks
-    if (childList.length === 0 || childList.length === p) {
-        // console.log('cas 1')
-        target.appendChild(fragment);
-    }
-    else {
-        // console.log(childList[p], p)
-        target.insertBefore(fragment, childList[p]);
-    }
-    // console.log(input)
-    // console.log(fragment.firstChild)
-}
-exports.insert = insert;
+// export function insert(
+//     this: EBObject,
+//     input: string | Element | EBObject | Function,
+//     target: Element,
+//     at?: number | string,
+//     times?: number
+// ) {
+//     const posFromString = (at: string, childList: HTMLCollection) => {
+//         const posMap: NumberObject = {
+//             start: 0,
+//             middle: Math.floor(childList.length / 2),
+//             end: childList.length
+//         }
+//         return at in posMap ? posMap[at] : posMap.end
+//     }
+//     const safePos = (n: number, length: number) => {
+//         return n < 0
+//             ? Math.max(length + (n + 1), 0)
+//             : Math.min(length, n)
+//     }
+//     const safeTimes = times ? Math.abs(Math.floor(times)) : 1
+//     const computedInput = Parse.getComputedValue.call(this, input)
+//     const fragment = Parse.getFragmentFrom(computedInput, safeTimes)
+//     const childList = target.children
+//     const n = Check.isString(at) ? posFromString(at, childList) : Math.floor(at as number)
+//     const p = safePos(n, childList.length)
+//     // console.log(
+//     //     `input: ${input}\n`,
+//     //     `computedInput: ${computedInput}\n`,
+//     //     `targetLength: ${childList.length}\n`,
+//     //     `at: ${at}\n`,
+//     //     `position: ${n}\n`,
+//     //     `safePosition: ${p}\n`,
+//     //     `times: ${times}\n`,
+//     //     `fragment:`, fragment
+//     // )
+//     this.setElement(fragment.firstElementChild!) // needs checks
+//     if (childList.length === 0 || childList.length === p) {
+//         target.appendChild(fragment)
+//     } 
+//     else {
+//         target.insertBefore(fragment, childList[p])
+//     }
+// }
 function insertV1(input, target, at, times) {
     const posFromString = (at, childList) => {
         const posMap = {
@@ -615,7 +610,7 @@ function insertV1(input, target, at, times) {
     let safeTimes = times ? Math.abs(Math.floor(times)) : 1;
     const clones = [...Array(safeTimes - 1)].map(() => input.cloneNode(true));
     const childList = target.children;
-    const n = Check.isString(at) ? posFromString(at, childList) : Math.floor(at);
+    const n = Check.isString(at) ? posFromString(at, childList) : Math.round(at);
     const p = safePos(n, childList.length);
     this.cloneList.push(...clones);
     // needs refacto
@@ -644,7 +639,7 @@ exports.insertV1 = insertV1;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.inputObject = exports.getComputedValue2 = exports.getComputedValue = exports.getTrueElement = exports.eventInput = exports.getElementFrom = exports.getFragmentFrom = exports.HTMLToElement = exports.elementStringSource = void 0;
+exports.inputObject = exports.getComputedValue2 = exports.getComputedValue = exports.getTrueElement = exports.eventInput = exports.getElementFrom = exports.HTMLToElement = exports.elementStringSource = void 0;
 const Check = __webpack_require__(/*! ./Check */ "./src/utils/Check.ts");
 function elementStringSource(source) {
     const Rrule = /^@(\w+):/;
@@ -664,18 +659,16 @@ function HTMLToElement(html) {
     return template.content.firstChild; // needs checks
 }
 exports.HTMLToElement = HTMLToElement;
-function getFragmentFrom(input, times = 1) {
-    const template = document.createElement('template');
-    let safeTimes = Math.abs(Math.floor(times));
-    const fillTemplate = (input) => {
-        const html = Check.isElement(input) ? input.outerHTML : `${input}`;
-        template.innerHTML += html;
-    };
-    while (safeTimes--)
-        fillTemplate(input);
-    return template.content;
-}
-exports.getFragmentFrom = getFragmentFrom;
+// export function getFragmentFrom(input: string | Element | EBObject, times: number = 1) {
+//     const template = document.createElement('template')
+//     let safeTimes = Math.abs(Math.floor(times))
+//     const fillTemplate = (input: string | Element | EBObject) => {
+//         const html = Check.isElement(input) ? input.outerHTML : `${input}`
+//         template.innerHTML += html
+//     }
+//     while (safeTimes--) fillTemplate(input)
+//     return template.content
+// }
 function getElementFrom(input) {
     return (Check.isString(input)
         ? HTMLToElement(input) // change this
@@ -700,7 +693,7 @@ function getTrueElement(input) {
 }
 exports.getTrueElement = getTrueElement;
 function getComputedValue(value) {
-    return Check.isFunction(value) ? value.call(this) : value;
+    return Check.isFunction(value) ? value.call(this, this) : value;
 }
 exports.getComputedValue = getComputedValue;
 function getComputedValue2(value, boundData) {
@@ -912,13 +905,6 @@ function process2(source, callback, keyRestriction) {
     const submitToRules = (rules, callback) => {
         let ruleApplied = false;
         const applyRule = (ruleValue, ruleName) => {
-            const ruleKey = ruleName.toLowerCase();
-            if (ruleKey in Rule.RuleMap) {
-                Rule.RuleMap[ruleKey].call(this, ruleValue, callback);
-                ruleApplied = true;
-            }
-        };
-        const applyRule2 = (ruleValue, ruleName) => {
             const ruleKey = ruleName.toLowerCase();
             if (ruleKey in Rule.RuleMap) {
                 Rule.RuleMap[ruleKey].call(this, ruleValue, callback);

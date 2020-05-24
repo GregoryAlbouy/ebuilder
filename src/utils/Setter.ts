@@ -10,6 +10,7 @@ import * as Rule from '../modules/Rule'
  * '<div>hello</div> or '@html:<div>hello</div> => element built upon html
  * '@select:div.mydiv' => document.querySelector('div.mydiv')
  */
+
 export function element(source: string | Element | EBObject): Element {
     const hasRule = (input: string) => input.charAt(0) === '@'
 
@@ -30,7 +31,7 @@ export function element(source: string | Element | EBObject): Element {
     if (Check.isElement(source)) return source
 
     if (Check.isEBObject(source)) return source.element
-    
+
     source = `${source}`
 
     if (hasRule(source)) {
@@ -184,14 +185,6 @@ export function process2(
         let ruleApplied = false
 
         const applyRule = (ruleValue: any, ruleName: string) => {
-            const ruleKey = ruleName.toLowerCase()
-            if (ruleKey in Rule.RuleMap) {
-                Rule.RuleMap[ruleKey].call(this, ruleValue, callback)
-                ruleApplied = true
-            }
-        }
-        
-        const applyRule2 = (ruleValue: any, ruleName: string) => {
             const ruleKey = ruleName.toLowerCase()
             if (ruleKey in Rule.RuleMap) {
                 Rule.RuleMap[ruleKey].call(this, ruleValue, callback)

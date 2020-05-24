@@ -8,19 +8,17 @@ const Test = {
         if (!errors) {
             console.log('-- VALID --')
 
-
             const validEntries = [
                 EBuilder('div').into(document.body),
                 EBuilder(document.createElement('div')),
                 EBuilder(EBuilder('div').element),
-                EBuilder('@select:div:nth-child(1)'),
+                EBuilder('@select:div:nth-of-type(3)'),
                 EBuilder('@html:<div><span></span></div>'),
                 EBuilder('<div><span></span></div>'),
                 `${EBuilder('<ul><li></ul>')}` // toString() -> elt.outerHTML
             ]
 
             validEntries.forEach(log)
-
 
         } else {
             console.log('-- ERRORS --')
@@ -131,11 +129,11 @@ const Test = {
                 // }
                 'children@if:isLucky': 'ROUGE'
             })
-            .setStyles({
+            .setStyle({
                 'background@if:isLucky': 'red',
                 'transform@on:click#myButton': () => `scale(${1 + 0.2 * Math.random()})`
             })
-            // .setStyles({ background: () => isLucky() ? 'red' : 'black' })
+            // .setStyle({ background: () => isLucky() ? 'red' : 'black' })
 
 
         } else {
@@ -150,7 +148,7 @@ const Test = {
 // Test.setters(false)
 // Test.setters(true)
 
-Test.insertions(false)
+// Test.insertions(false)
 // Test.insertions(true)
 
 // Test.rules(false)
@@ -158,7 +156,7 @@ Test.insertions(false)
 
 
 // const div = EBuilder('div')
-//     .setStyles(() => ({ width: '100px', height: '100px', background: '#39C' }))
+//     .setStyle(() => ({ width: '100px', height: '100px', background: '#39C' }))
 //     .into(document.body, { times: 3 })
 
 // console.log(div)
@@ -171,7 +169,7 @@ Test.insertions(false)
 
 // const items = ['one', 'due', 'trois', 'cuattro', 'fünf']
 
-// Create a list containing a list-item for each value in items
+// // Create a list containing a list-item for each value in items
 // const ol = document.createElement('ol')
 // ol.classList.add('list', 'list-1')
 // for (const [i, item] of items.entries()) {
@@ -197,7 +195,7 @@ Test.insertions(false)
 
 // elList.set({
 //     properties: {
-//         'innerHTML@once:hi-there': () => elList.htmlContent() + '<li>2</li>'
+//         'innerHTML@once:hi-there': () => elList.el.innerHTML + '<li>2</li>'
 //     }
 // }).setChildren('<li>1</li>').dispatch('hi-there')
 
@@ -209,7 +207,7 @@ Test.insertions(false)
 //     .into(document.body)
 
 // const colors = EBuilder('div')
-// colors.setStyles({
+// colors.setStyle({
 //     width: '200px',
 //     height: '200px',
 //     transition: 'background 1s',
@@ -217,52 +215,29 @@ Test.insertions(false)
 // })
 // document.body.innerHTML += colors
 
-// const elList = EBuilder('ul').into(document.body)
-// elList.setProperties({
-//     'innerHTML@on:click#window': elList.htmlContent() + `<p>I have ${elList.count()} children.</p>`
+// const elList2 = EBuilder('ul').into(document.body)
+// elList2.setProperties({
+//     'innerHTML@on:click#window': elList2.el.innerHTML + `<p>I have ${elList2.count()} children.</p>`
 // })
 
-// const elList = EBuilder('ul').into(document.body)
-// elList.setProperties({
-//     'innerHTML@interval:1000': () => elList.htmlContent() + `<li>I have ${elList.count() + 1} children.</li>`
+// const elList3 = EBuilder('ul').into(document.body)
+// elList3.setProperties({
+//     'innerHTML@interval:1000': () => elList3.el.innerHTML + `<li>I have ${elList3.count() + 1} children.</li>`
 // })
 
-// EBuilder('button').setProperties({ onclick: () => () => clearInterval(elList.interval) }).into(document.body)
+// EBuilder('button').setProperties({ onclick: () => () => clearInterval(elList3.interval) }).into(document.body)
 
 // EBuilder('<button>click me</button>').setProperties({
 //     'textContent@on:click': () => Math.random() < .5 ? 'win!' : 'loose!',
 //     'innerHTML@on:mouseleave': 'Hey <strong>come back</strong>!'
 // }).into(document.body)
 
-// EBuilder('h2').textContent('Beware of the crazy button').set({
+// EBuilder('h2').setContent('Beware of the crazy button').set({
 //     style: {
 //         borderLeft: '4px solid #333',
 //         font: '2rem sans-serif'
 //     }
 // }).before(EBuilder('@select:button'))
-
-
-// const create = function(str) {
-//     const fragment = document.createDocumentFragment()
-//     const div = document.createElement('div')
-//     div.innerHTML = str
-//     while (div.firstChild) fragment.appendChild(div.firstChild)
-//     return fragment
-// }
-
-// const create2 = function(str) {
-//     const template = document.createElement('template')
-//     template.innerHTML = str
-//     return template.content
-// }
-
-// const c1 = create('yo<button><span>hello</span></button>')
-// const c2 = create2('yo<button><span>hello</span></button>')
-
-// console.log(create('yo<button><span>hello</span></button>'))
-// console.log(create2('yo<button><span>hello</span></button>'))
-
-// document.body.append(c1, c2)
 
 
 // const p = EBuilder('p').setContent('Lopsum Irem').into(document.body, { times: 3 })
@@ -274,3 +249,23 @@ Test.insertions(false)
 //         'background@interval:500': () => `hsl(360 * Math.random(), 50%, 50%`
 //     }
 // }).into(document.body)
+
+
+
+
+// EBuilder('button').into(document.body).setListeners(['click', function(e) { console.log(e,this)}])
+
+
+
+// const numbers = [ 'one', 'dos', 'trois', 'quattro'  ]
+
+// // renders only even numbers
+// EBuilder('ul').setChildren(numbers.map((v, i) => i % 2 ? `<li>${v}</li>` : ''))
+//     .into(document.body)
+
+
+
+EBuilder('<button>click me</button>').setProperties({
+    'textContent@on:click': () => Math.random() < .5 ? 'win!' : 'loose!',
+    'innerHTML@on:mouseleave': 'Hey <strong>come back</strong>!'
+}).into(document.body)

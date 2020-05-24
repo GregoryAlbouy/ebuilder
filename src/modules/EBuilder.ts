@@ -17,9 +17,11 @@ const EBuilder = function(this: any, source: Element | string)
     const cloneList: Element[] = []
 
     return {
-        el: element,
-        element: element,
-        getHTML: function() { return this.element.innerHTML },
+        get el() { return element },
+        get element() { return element },
+        get htmlContent() { return this.element.innerHTML },
+        get count() { return this.element.childNodes.length },
+        get children() { return this.element.childNodes },
         isEBuilder: true,
         referenceMap: referenceMap,
         cloneList: cloneList,
@@ -197,8 +199,9 @@ const EBuilder = function(this: any, source: Element | string)
         },
         
         // + setContent(options = { add?, remove?,  })
-        setContent: function(input: string | Element | EBObject) {
-            this.element.innerHTML = `${input}`
+        setContent: function(input: string | Element | EBObject | Function) {
+            const value = Parse.getComputedValue.call(this, input)
+            this.element.innerHTML = `${value}`
             // DOM.insert.call(this, input, element, at, 1)
 
             return this
@@ -208,14 +211,10 @@ const EBuilder = function(this: any, source: Element | string)
             return element.outerHTML
         },
 
-        count: function() {
-            return this.element.childNodes.length
-        },
-
-        setElement: function(value: Element) {
-            this.element = value
-            this.el = value
-        }
+        // setElement: function(value: Element) {
+        //     this.element = value
+        //     this.el = value
+        // }
     }
 }
 

@@ -8,7 +8,7 @@ export const typeOf = (input: any): string => {
 
 export const isTypeOf = (input: any, ...types: string[]): boolean => {
     return types
-        .map((type) => typeOf(input) === type.toLocaleLowerCase())
+        .map((type) => typeOf(input) === type.toLowerCase())
         .reduce((a, c) => a || c)
 }
 
