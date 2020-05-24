@@ -120,14 +120,14 @@ someElement.innerHTML += button
 
 #### dispatch(`string`)
 Emits an event from the current element with the input string as a name.
-See [event-name example](#':event-name') for a practical use.
+See [event-name example](:event-name) for a practical use.
 
 #### given(`ReferencePair` | `ReferencePair[]`)
 ReferencePair: [ `anyReference`, `unique-string-id` ]
 Registers any reference in the EBuilder object, allowing to be accessed with an `@at-rule` followed by `unique-string-id`.  
 Note that if the `anyReference` is a **named function**, the string id can be omitted and the function name will be used as an id in this cas
 
-See [event-emitter example](#'#event-emitter') or [@if example](#@if) for a practical uses.
+See [event-emitter example](#event-emitter) or [@if example](#if) for a practical uses.
 
 
 ## Properties
@@ -204,7 +204,7 @@ EBuilder('<button>click me</button>').setProperties({
 
 With `@on` the value will be updated each time the event occurs, but only the first time with `@once`
 
-#### ':event-name'
+#### :event-name
 
 The event name can be any string value:
 * A built-in event: `click`, `keydown`...
@@ -226,7 +226,7 @@ will output:
 * 1
 * 2
 
-#### '#event-emitter'
+#### #event-emitter
 
 By default, the listener is set on the current element. But what if I want my element to react to an external event, like a click on a button?  
 To achieve this you can designate a specific target using `#` in the string key after the event name. But there's a catch: for EBuilder to recover the right object from that string, it must have been previously referenced with the `given()` method, as in the example below:
