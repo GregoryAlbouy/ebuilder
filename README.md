@@ -34,9 +34,9 @@ EBuilder(input: string | Element | EBObject)
 |---------------|---------|
 | string        | EBuilder(`'p'`) |
 | html string   | EBuilder(`'<p>Hello <span class="italic">World</span></p>!'`) |
-| @rule string  |  EBuilder(`'@select:p.paragraph:nth-child(1)'`) |
+| @rule string  | EBuilder(`'@select:p.paragraph:nth-child(1)'`) |
 | Element       | Ebuilder(`document.querySelector('p')`) |
-| EBObject      |  EBuilder(`EBuilder('p')`) |
+| EBObject      | EBuilder(`EBuilder('p')`) |
 
 
 ## Methods
@@ -119,15 +119,15 @@ someElement.innerHTML += button
 ```
 
 #### dispatch(`string`)
-Emits and event with the input string name from the element.
-See [event-name example](#:event-name) for a practical use.
+Emits an event from the current element with the input string as a name.
+See [event-name example](#':event-name') for a practical use.
 
 #### given(`ReferencePair` | `ReferencePair[]`)
 ReferencePair: [ `anyReference`, `unique-string-id` ]
 Registers any reference in the EBuilder object, allowing to be accessed with an `@at-rule` followed by `unique-string-id`.  
 Note that if the `anyReference` is a **named function**, the string id can be omitted and the function name will be used as an id in this cas
 
-See [event-emitter example](#:event-emitter) or [@if example](#@if) for a practical uses.
+See [event-emitter example](#'#event-emitter') or [@if example](#@if) for a practical uses.
 
 
 ## Properties
@@ -185,7 +185,7 @@ EBuilder('button').set({
 }).into(document.body)
 ```
 
-### `@on`, `@once`
+### @on, @once
 
 The corresponding value will be set when an `:eventName` event is emitted by the current element.
 
@@ -204,7 +204,7 @@ EBuilder('<button>click me</button>').setProperties({
 
 With `@on` the value will be updated each time the event occurs, but only the first time with `@once`
 
-#### `:event-name`
+#### ':event-name'
 
 The event name can be any string value:
 * A built-in event: `click`, `keydown`...
@@ -226,7 +226,7 @@ will output:
 * 1
 * 2
 
-#### `#event-emitter`
+#### '#event-emitter'
 
 By default, the listener is set on the current element. But what if I want my element to react to an external event, like a click on a button?  
 To achieve this you can designate a specific target using `#` in the string key after the event name. But there's a catch: for EBuilder to recover the right object from that string, it must have been previously referenced with the `given()` method, as in the example below:
@@ -235,7 +235,7 @@ To achieve this you can designate a specific target using `#` in the string key 
 const myButton = EBuilder('button').into(document.body)
 
 EBuilder('p')
-    .given([ myButton, 'buttonRef' ])
+    .given([myButton, 'buttonRef'])
     .setProperties({ 'textContent@once:click#buttonRef': 'Hello!' })
     .into(document.body)
 ```
@@ -243,7 +243,7 @@ EBuilder('p')
 
 The `window` object is an exception to this rule, as it doesn't need to be pre-indexed.
 
-### `@timeout` `@interval`
+### @timeout, @interval
 
 `'key@timeout:duration'`, `'key@interval:duration'`
 
@@ -260,13 +260,15 @@ EBuilder('div').into(document.body).setStyles({
 
 Note: the interval function is referenced as the `.interval` property, which means you can clear it using `clearInterval(myEBuilderObject.interval)`.
 
-### `@if`
+### @if
 
 `'key@if:functionReference: 'value'`  
 The corresponding value is assigned if the specified `:functionReference` function returns `true`.
-See [given() method](#given()) for more details about references.
+See [given() method](#Miscellaneous) for more details about references.
 
 ```javascript
+const isLucky = () => Math.random() < .5
+
 EBuilder('<button>click me</button>')
     .given(isLucky)
     .set({
@@ -274,7 +276,7 @@ EBuilder('<button>click me</button>')
 })
 ```
 
-### `@for`
+### @for
 
 -- NOT YET AVAILABLE --
 
