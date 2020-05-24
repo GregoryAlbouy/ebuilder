@@ -5,12 +5,6 @@ Build and manipulate elements the intuitive way, in a single statement with a to
 ```javascript
 const p = EBuilder('p').setContent('Lopsum Irem').into(document.body)
 ```
-```javascript
-EBuilder('<button>click me</button>').setProperties({
-    'textContent@on:click': () => Math.random() < .5 ? 'win!' : 'loose!',
-    'innerHTML@on:mouseleave': 'Hey <strong>come back</strong>!'
-}).into(document.body)
-```
 
 ## Installation
 
