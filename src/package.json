@@ -5,7 +5,7 @@
   "main": "./index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gregoryalbouy/e-builder.git"
+    "url": "git+https://github.com/gregoryalbouy/ebuilder.git"
   },
   "keywords": [
     "html",

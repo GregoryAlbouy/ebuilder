@@ -1,6 +1,6 @@
 {
   "name": "ebuilder-js",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Highly configurable and easily manipulable elements in a single declaration, with a functionnal touch.",
   "scripts": {
     "start": "NODE_ENV=development webpack --watch",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gregoryalbouy/e-builder.git"
+    "url": "git+https://github.com/gregoryalbouy/ebuilder.git"
   },
   "keywords": [
     "html",
