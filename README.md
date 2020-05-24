@@ -120,14 +120,14 @@ someElement.innerHTML += button
 
 #### dispatch(`string`)
 Emits and event with the input string name from the element.
-See [event-name example](#`:event-name`) for a practical use.
+See [event-name example](#:event-name) for a practical use.
 
 #### given(`ReferencePair` | `ReferencePair[]`)
 ReferencePair: [ `anyReference`, `unique-string-id` ]
 Registers any reference in the EBuilder object, allowing to be accessed with an `@at-rule` followed by `unique-string-id`.  
 Note that if the `anyReference` is a **named function**, the string id can be omitted and the function name will be used as an id in this cas
 
-See [event-emitter example](#`:event-emitter`) or [@if example] for a practical uses.
+See [event-emitter example](#:event-emitter) or [@if example](#@if) for a practical uses.
 
 
 ## Properties
