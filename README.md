@@ -123,7 +123,7 @@ Emits an event from the current element with the input string as a name.
 See [event-name example](#event-name) for a practical use.
 
 #### given(`ReferencePair` | `ReferencePair[]`)
-ReferencePair: [ `anyReference`, `unique-string-id` ]
+ReferencePair: [ `anyReference`, `'unique-string-id'` ]
 Registers any reference in the EBuilder object, allowing to be accessed with an `@at-rule` followed by `unique-string-id`.  
 Note that if the `anyReference` is a **named function**, the string id can be omitted and the function name will be used as an id in this cas
 
@@ -213,14 +213,16 @@ The event name can be any string value:
 
 Note that EBuilder allows to dispatch such events easily with the `dispatch()` method, which allows to do such things:
 
-Considering  `const elList = EBuilder('ul').into(document.body)`,
-
 ```javascript
-elList.set({
-    properties: {
-        'innerHTML@once:hi-there': () => elList.htmlContent() + '<li>2</li>'
-    }
-}).setChildren('<li>1</li>').dispatch('hi-there')
+EBuilder('ul')
+    .setProperties({ 'innerHTML@once:hi-there': (self) => self.htmlContent + '<li>2</li>' })
+    .setChildren('<li>1</li>')
+    .dispatch('hi-there')
+
+/*
+- 1
+- 2
+*/
 ```
 will output:
 * 1
