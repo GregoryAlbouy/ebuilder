@@ -20,7 +20,7 @@ import EBuilder from 'ebuilder-js'
 ### Using bundle
 
 ```html
-<script src="./path/to/ebuilder.min.js">
+<script src="./path/to/ebuilder.min.js"></script>
 ```
 
 ## Doc
@@ -33,7 +33,7 @@ EBuilder(input: string | Element | EBObject)
 | Argument type | Example |
 |---------------|---------|
 | string        | EBuilder(`'p'`) |
-| html string   | EBuilder(`'<p>Hello <span class="italic">World</span></p>!'`) |
+| html string   | EBuilder(`'<p>Hello <span class="italic">World</span>!</p>'`) |
 | @rule string  | EBuilder(`'@select:p.paragraph:nth-child(1)'`) |
 | Element       | Ebuilder(`document.querySelector('p')`) |
 | EBObject      | EBuilder(`EBuilder('p')`) |
