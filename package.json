@@ -1,6 +1,6 @@
 {
   "name": "ebuilder-js",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Highly configurable and easily manipulable elements in a single declaration, with a functionnal touch.",
   "scripts": {
     "start": "NODE_ENV=development webpack --watch",
