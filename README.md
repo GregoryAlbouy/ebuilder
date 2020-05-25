@@ -92,16 +92,25 @@ EBuilder(x).set({}: {
     children?:  EBChild | EBChild[],
 })
 ```
-with
-* EventTuple: arguments of addEventListener method in an array: `[ eventName: string, callback: Function, options ]`
-* EBChild: html string, Element, EBObject
+* `EventTuple`: array of addEventListener arguments, e.g.:
+```javascript
+[ 'click', () => console.log('clicked'), false ]
+```
+* `EBChild`: any valid EBuilder `children` input (html string, Node, EBObject):
+```javascript
+children: [
+    '<h3>My article</h3>',
+    document.querySelector('p'),
+    EBuilder('button').setContent('read more')
+]
+```
 
 Note that any value can be replaced with a function returning that value, see [Function as value](#function-as-value)
 
 #### setAttributes(`object`)
 #### setProperties(`object`)
 #### setListeners(`array`)
-#### setChildren(`string` | `Element` | `EBObject` | `array`)
+#### setChildren(`EBChild` | `EBChild[]`)
 #### setClasses(`string` | `array`)
 #### setStyle(`object`)
 #### setContent(`string | EBObject`)
@@ -224,9 +233,6 @@ EBuilder('ul')
 - 2
 */
 ```
-will output:
-* 1
-* 2
 
 #### #event-emitter
 
