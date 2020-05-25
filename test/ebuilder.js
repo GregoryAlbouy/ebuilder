@@ -217,7 +217,6 @@ const EBuilder = function (source) {
                     ? emitterInput.element
                     : emitterInput;
             emitter.dispatchEvent(new CustomEvent(nameInput));
-            console.log(emitter, nameInput);
             return this;
         },
         set: function (options = {}) {
@@ -254,7 +253,6 @@ const EBuilder = function (source) {
             return this;
         },
         setStyle: function (style) {
-            // const value = Parse.getComputedValue.call(this, style)
             Setter.Style.call(this, style);
             return this;
         },
@@ -271,7 +269,7 @@ const EBuilder = function (source) {
         },
         toString: function () {
             return element.outerHTML;
-        },
+        }
     };
 };
 exports.default = EBuilder;

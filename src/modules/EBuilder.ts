@@ -135,7 +135,6 @@ const EBuilder = function(this: any, source: Element | string)
 
             
             emitter.dispatchEvent(new CustomEvent(nameInput))
-            console.log(emitter, nameInput)
             return this
         },
 
@@ -186,7 +185,6 @@ const EBuilder = function(this: any, source: Element | string)
         },
 
         setStyle: function(style: StringObject | Function) {
-            // const value = Parse.getComputedValue.call(this, style)
             Setter.Style.call(this, style)
 
             return this
@@ -209,12 +207,7 @@ const EBuilder = function(this: any, source: Element | string)
 
         toString: function() {
             return element.outerHTML
-        },
-
-        // setElement: function(value: Element) {
-        //     this.element = value
-        //     this.el = value
-        // }
+        }
     }
 }
 
