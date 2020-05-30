@@ -117,161 +117,158 @@ const Check = __webpack_require__(/*! ../utils/Check */ "./src/utils/Check.ts");
 const DOM = __webpack_require__(/*! ../utils/DOM */ "./src/utils/DOM.ts");
 const Parse = __webpack_require__(/*! ../utils/Parse */ "./src/utils/Parse.ts");
 const Setter = __webpack_require__(/*! ../utils/Setter */ "./src/utils/Setter.ts");
-const EBuilder = function (source) {
-    if (!Check.isValidSource(source)) {
-        new EBuilderError_1.default('Invalid source input', source);
-        return;
-    }
-    const element = Setter.element(source);
-    const referenceMap = new Map([['window', window]]);
-    const cloneList = [];
-    return {
-        get el() { return element; },
-        get element() { return element; },
-        get htmlContent() { return this.element.innerHTML; },
-        get count() { return this.element.childNodes.length; },
-        get children() { return this.element.childNodes; },
-        isEBuilder: true,
-        referenceMap: referenceMap,
-        cloneList: cloneList,
-        getRef: function (query) {
-            return query ? this.referenceMap.get(query) : (new EBuilderError_1.default('nul!', query), false);
-        },
-        given: function (...references) {
-            const register = (ref) => {
-                if (Check.isArray(ref)) {
-                    const [target, id] = ref; // come back here later
-                    this.referenceMap.set(id, target);
-                }
-                else if (Check.isNamedFunction(ref)) {
-                    this.referenceMap.set(ref.name, ref);
-                }
-                else
-                    new EBuilderError_1.default('Invalid given() argument input', ref);
-            };
-            references.forEach(register);
-            return this;
-        },
-        into: function (targetInput, { at = -1, times = 1 } = {}) {
-            if (!Check.isValidTarget(targetInput) || !Check.isNumber(times))
-                return;
-            // use Parse.getTrueElement() instead
-            const getTarget = (target) => {
-                return Check.isEBObject(target)
-                    ? target.element
-                    : target;
-            };
-            DOM.insertV1.call(this, this.element, getTarget(targetInput), at, times);
-            this.element.dispatchEvent(new CustomEvent('ebuilderinsert'));
-            return this;
-        },
-        after: function (inputTarget) {
-            const target = Parse.getTrueElement(inputTarget);
-            target.insertAdjacentElement('afterend', element);
-            this.element.dispatchEvent(new CustomEvent('ebuilderinsert'));
-            return this;
-        },
-        before: function (inputTarget) {
-            const target = Parse.getTrueElement(inputTarget);
-            target.insertAdjacentElement('beforebegin', element);
-            this.element.dispatchEvent(new CustomEvent('ebuilderinsert'));
-            return this;
-        },
-        replace: function (inputTarget) {
-            var _a;
-            const target = Parse.getTrueElement(inputTarget);
-            (_a = target.parentNode) === null || _a === void 0 ? void 0 : _a.replaceChild(element, target);
-            this.element.dispatchEvent(new CustomEvent('ebuilderinsert'));
-            return this;
-        },
-        swap: async function (swapped, animate) {
-            if (!Check.isValidSwap(element, swapped))
-                return;
-            if (animate) {
-                const ms = typeof animate === 'object' && animate.animationDuration
-                    ? animate.animationDuration
-                    : undefined;
-                await new EBuilderAnimation_1.default(ms).swap2(element, swapped);
-            }
-            const dummy = document.createElement('div');
-            element.parentNode.replaceChild(dummy, element);
-            swapped.parentNode.replaceChild(element, swapped);
-            dummy.parentNode.replaceChild(swapped, dummy);
-            return this;
-        },
-        out: function (all) {
-            var _a;
-            (_a = element.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(element);
-            if (all)
-                this.clearClones;
-            return this;
-        },
-        clearClones: function () {
-            this.cloneList.forEach((clone) => { var _a; return (_a = clone.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(clone); });
-            return this;
-        },
-        dispatch: function (nameInput, emitterInput) {
-            const emitter = !emitterInput
-                ? this.element
-                : 'isEBuilder' in emitterInput
-                    ? emitterInput.element
-                    : emitterInput;
-            emitter.dispatchEvent(new CustomEvent(nameInput));
-            return this;
-        },
-        set: function (options = {}) {
-            const Options = {
-                properties: Setter.Properties,
-                attributes: Setter.Attributes,
-                listeners: Setter.Listeners,
-                children: Setter.Children,
-                style: Setter.Style
-            };
-            const setOption = (name, value) => {
-                if (!(name in Options))
-                    return;
-                Options[name].call(this, value);
-            };
-            Setter.process.call(this, options, setOption);
-            this.element.dispatchEvent(new CustomEvent('ebuilderset'));
-            return this;
-        },
-        setAttributes: function (attributes) {
-            Setter.Attributes.call(this, attributes);
-            return this;
-        },
-        setProperties: function (properties) {
-            Setter.Properties.call(this, properties);
-            return this;
-        },
-        setListeners: function (listeners) {
-            Setter.Listeners.call(this, listeners);
-            return this;
-        },
-        setChildren: function (children) {
-            Setter.Children.call(this, children);
-            return this;
-        },
-        setStyle: function (style) {
-            Setter.Style.call(this, style);
-            return this;
-        },
-        setClasses: function (...classes) {
-            element.classList.add(...[].concat(...classes));
-            return this;
-        },
-        // + setContent(options = { add?, remove?,  })
-        setContent: function (input) {
-            const value = Parse.getComputedValue.call(this, input);
-            this.element.innerHTML = `${value}`;
-            // DOM.insert.call(this, input, element, at, 1)
-            return this;
-        },
-        toString: function () {
-            return element.outerHTML;
+class EBuilder {
+    constructor(source) {
+        this.isEBuilder = true;
+        if (!Check.isValidSource(source)) {
+            new EBuilderError_1.default('Invalid source input', source);
+            // return
         }
-    };
-};
+        this.element = Setter.element(source);
+        this.referenceMap = new Map([['window', window]]);
+        this.cloneList = [];
+    }
+    get el() { return this.element; }
+    get htmlContent() { return this.element.innerHTML; }
+    get count() { return this.element.childNodes.length; }
+    get children() { return this.element.childNodes; }
+    getRef(query) {
+        return query ? this.referenceMap.get(query) : (new EBuilderError_1.default('nul!', query), false);
+    }
+    given(...references) {
+        const register = (ref) => {
+            if (Check.isArray(ref)) {
+                const [target, id] = ref; // come back here later
+                this.referenceMap.set(id, target);
+            }
+            else if (Check.isNamedFunction(ref)) {
+                this.referenceMap.set(ref.name, ref);
+            }
+            else
+                new EBuilderError_1.default('Invalid given() argument input', ref);
+        };
+        references.forEach(register);
+        return this;
+    }
+    into(targetInput, { at = -1, times = 1 } = {}) {
+        if (!Check.isValidTarget(targetInput) || !Check.isNumber(times))
+            return;
+        // use Parse.getTrueElement() instead
+        const getTarget = (target) => {
+            return Check.isEBObject(target)
+                ? target.element
+                : target;
+        };
+        DOM.insertV1.call(this, this.element, getTarget(targetInput), at, times);
+        this.element.dispatchEvent(new CustomEvent('ebuilderinsert'));
+        return this;
+    }
+    after(inputTarget) {
+        const target = Parse.getTrueElement(inputTarget);
+        target.insertAdjacentElement('afterend', this.element);
+        this.element.dispatchEvent(new CustomEvent('ebuilderinsert'));
+        return this;
+    }
+    before(inputTarget) {
+        const target = Parse.getTrueElement(inputTarget);
+        target.insertAdjacentElement('beforebegin', this.element);
+        this.element.dispatchEvent(new CustomEvent('ebuilderinsert'));
+        return this;
+    }
+    replace(inputTarget) {
+        var _a;
+        const target = Parse.getTrueElement(inputTarget);
+        (_a = target.parentNode) === null || _a === void 0 ? void 0 : _a.replaceChild(this.element, target);
+        this.element.dispatchEvent(new CustomEvent('ebuilderinsert'));
+        return this;
+    }
+    async swap(swapped, animate) {
+        if (!Check.isValidSwap(this.element, swapped))
+            return;
+        if (animate) {
+            const ms = typeof animate === 'object' && animate.animationDuration
+                ? animate.animationDuration
+                : undefined;
+            await new EBuilderAnimation_1.default(ms).swap2(this.element, swapped);
+        }
+        const dummy = document.createElement('div');
+        this.element.parentNode.replaceChild(dummy, this.element);
+        swapped.parentNode.replaceChild(this.element, swapped);
+        dummy.parentNode.replaceChild(swapped, dummy);
+        return this;
+    }
+    out(all) {
+        var _a;
+        (_a = this.element.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(this.element);
+        if (all)
+            this.clearClones;
+        return this;
+    }
+    clearClones() {
+        this.cloneList.forEach((clone) => { var _a; return (_a = clone.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(clone); });
+        return this;
+    }
+    dispatch(nameInput, emitterInput) {
+        const emitter = !emitterInput
+            ? this.element
+            : 'isEBuilder' in emitterInput
+                ? emitterInput.element
+                : emitterInput;
+        emitter.dispatchEvent(new CustomEvent(nameInput));
+        return this;
+    }
+    set(options = {}) {
+        const Options = {
+            properties: Setter.Properties,
+            attributes: Setter.Attributes,
+            listeners: Setter.Listeners,
+            children: Setter.Children,
+            style: Setter.Style
+        };
+        const setOption = (name, value) => {
+            if (!(name in Options))
+                return;
+            Options[name].call(this, value);
+        };
+        Setter.process.call(this, options, setOption);
+        this.element.dispatchEvent(new CustomEvent('ebuilderset'));
+        return this;
+    }
+    setAttributes(attributes) {
+        Setter.Attributes.call(this, attributes);
+        return this;
+    }
+    setProperties(properties) {
+        Setter.Properties.call(this, properties);
+        return this;
+    }
+    setListeners(listeners) {
+        Setter.Listeners.call(this, listeners);
+        return this;
+    }
+    setChildren(children) {
+        Setter.Children.call(this, children);
+        return this;
+    }
+    setStyle(style) {
+        Setter.Style.call(this, style);
+        return this;
+    }
+    setClasses(...classes) {
+        this.element.classList.add(...[].concat(...classes));
+        return this;
+    }
+    // + setContent(options = { add?, remove?,  })
+    setContent(input) {
+        const value = Parse.getComputedValue.call(this, input);
+        this.element.innerHTML = `${value}`;
+        // DOM.insert.call(this, input, this.element, at, 1)
+        return this;
+    }
+    toString() {
+        return this.element.outerHTML;
+    }
+}
 exports.default = EBuilder;
 
 
