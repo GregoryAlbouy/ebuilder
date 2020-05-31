@@ -20,6 +20,8 @@
     "url": "https://github.com/gregoryalbouy/ebuilder/issues"
   },
   "homepage": "https://github.com/gregoryalbouy/ebuilder#readme",
-  "devDependencies": {},
-  "dependencies": {}
+  "dependencies": {
+    "@babel/runtime": "^7.9.6"
+  },
+  "devDependencies": {}
 }
