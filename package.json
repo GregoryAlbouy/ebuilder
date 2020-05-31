@@ -6,10 +6,9 @@
     "start": "NODE_ENV=development webpack --watch",
     "dev": "NODE_ENV=development webpack",
     "build": "NODE_ENV=production webpack",
-    "package": "npm run package:pre && npm run package:build && npm run package:post",
-    "package:pre": "rm -r package/*",
-    "package:build": "tsc && babel package -d package",
-    "package:post": "npm run package:copyStatics && npm run package:removeUnnecessary",
+    "package": "tsc && babel package -d package",
+    "prepackage": "rm -r package/*",
+    "postpackage": "npm run package:copyStatics && npm run package:removeUnnecessary",
     "package:copyStatics": "cp README.md package/README.md && cp src/package.json package/package.json",
     "package:removeUnnecessary": "rm package/index.d.ts package/declarations.js",
     "package:publish": "npm publish package"
